@@ -8,7 +8,7 @@ import (
 	"webtyp.com/time"
 )
 
-// Topics of the domain events, published after each successful change.
+// Temas de los eventos de dominio, publicados después de cada cambio exitoso.
 const (
 	TopicSpecialtyCreated = "catalog.specialty.created"
 	TopicSpecialtyUpdated = "catalog.specialty.updated"
@@ -60,8 +60,9 @@ func New(db *orm.DB, deps Deps) (*Module, error) {
 	return &Module{db: db, ids: deps.IDs, pub: deps.Publisher, currencies: currencies}, nil
 }
 
-// Specialty Service methods
+// Métodos de Especialidad
 
+// Ejemplo: spec, err := cat.GetSpecialty("tenant-1", "spec-id")
 func (m *Module) GetSpecialty(tenantId, id string) (Specialty, error) {
 	var spec Specialty
 	qb := m.db.Query(&spec).Where(Specialty_.Id).Eq(id)
@@ -78,6 +79,7 @@ func (m *Module) GetSpecialty(tenantId, id string) (Specialty, error) {
 	return spec, nil
 }
 
+// Ejemplo: spec, err := cat.GetSpecialtyByPrefix("tenant-1", "MD")
 func (m *Module) GetSpecialtyByPrefix(tenantId, prefix string) (Specialty, error) {
 	var spec Specialty
 	qb := m.db.Query(&spec).Where(Specialty_.Prefix).Eq(prefix).Where(Specialty_.TenantId).Eq(tenantId)
@@ -92,6 +94,7 @@ func (m *Module) GetSpecialtyByPrefix(tenantId, prefix string) (Specialty, error
 }
 
 
+// Ejemplo: list, err := cat.ListSpecialties("tenant-1")
 func (m *Module) ListSpecialties(tenantId string) ([]Specialty, error) {
 	var spec Specialty
 	qb := m.db.Query(&spec).Where(Specialty_.TenantId).Eq(tenantId)
@@ -106,6 +109,7 @@ func (m *Module) ListSpecialties(tenantId string) ([]Specialty, error) {
 	return list, nil
 }
 
+// Ejemplo: spec, err := cat.UpsertSpecialty(Specialty{TenantId: "tenant-1", Prefix: "MD", Name: "Medicina", IsPublished: true})
 func (m *Module) UpsertSpecialty(spec Specialty) (Specialty, error) {
 	action := model.ActionCreate
 	if spec.Id != "" {
@@ -120,7 +124,7 @@ func (m *Module) UpsertSpecialty(spec Specialty) (Specialty, error) {
 		return Specialty{}, ValidationError{Err: err}
 	}
 
-	// Validate prefix uniqueness per tenant
+	// Validar la unicidad del prefijo por inquilino
 	existingPrefix, err := m.GetSpecialtyByPrefix(spec.TenantId, spec.Prefix)
 	if err == nil {
 		if existingPrefix.Id != spec.Id {
@@ -141,7 +145,7 @@ func (m *Module) UpsertSpecialty(spec Specialty) (Specialty, error) {
 		return spec, nil
 	}
 
-	// Verify specialty exists and belongs to tenant
+	// Verificar que la especialidad existe y pertenece al inquilino
 	_, err = m.GetSpecialty(spec.TenantId, spec.Id)
 	if err != nil {
 		if orm.IsNotFound(err) || err == ErrSpecialtyNotFound {
@@ -165,13 +169,14 @@ func (m *Module) UpsertSpecialty(spec Specialty) (Specialty, error) {
 	return spec, nil
 }
 
+// Ejemplo: err := cat.DeleteSpecialty("tenant-1", "spec-id")
 func (m *Module) DeleteSpecialty(tenantId, id string) error {
 	spec, err := m.GetSpecialty(tenantId, id)
 	if err != nil {
 		return err
 	}
 
-	// Check if any catalog.service is using this specialty
+	// Verificar si algún catalog.service está usando esta especialidad
 	var item Service
 	qb := m.db.Query(&item).Where(Service_.SpecialtyId).Eq(id)
 	if spec.TenantId != "" {
@@ -200,8 +205,9 @@ func (m *Module) DeleteSpecialty(tenantId, id string) error {
 	return nil
 }
 
-// Service methods
+// Métodos de Servicio
 
+// Ejemplo: svc, err := cat.GetService("tenant-1", "svc-id")
 func (m *Module) GetService(tenantId, id string) (Service, error) {
 	var item Service
 	qb := m.db.Query(&item).Where(Service_.Id).Eq(id)
@@ -218,6 +224,7 @@ func (m *Module) GetService(tenantId, id string) (Service, error) {
 	return item, nil
 }
 
+// Ejemplo: svc, err := cat.FindBySKU("tenant-1", "MD0001")
 func (m *Module) FindBySKU(tenantId, sku string) (Service, error) {
 	var item Service
 	qb := m.db.Query(&item).Where(Service_.Sku).Eq(sku).Where(Service_.TenantId).Eq(tenantId)
@@ -231,6 +238,7 @@ func (m *Module) FindBySKU(tenantId, sku string) (Service, error) {
 	return item, nil
 }
 
+// Ejemplo: list, err := cat.ListServices("tenant-1", ServiceFilter{ActiveOnly: true})
 func (m *Module) ListServices(tenantId string, filter ServiceFilter) ([]Service, error) {
 	var item Service
 	qb := m.db.Query(&item).Where(Service_.TenantId).Eq(tenantId)
@@ -258,6 +266,7 @@ func (m *Module) ListServices(tenantId string, filter ServiceFilter) ([]Service,
 	return items, nil
 }
 
+// Ejemplo: svc, err := cat.CreateService(Service{TenantId: "tenant-1", Sku: "MD0001", Name: "Consulta", Price: 25000, Currency: "CLP", IsActive: true, TaxTreatment: TaxExempt})
 func (m *Module) CreateService(item Service) (Service, error) {
 	if item.Id == "" {
 		item.Id = m.ids.NewID()
@@ -283,7 +292,7 @@ func (m *Module) CreateService(item Service) (Service, error) {
 		return Service{}, ValidationError{Err: fmt.Err("invalid tax treatment")}
 	}
 
-	// Validate SKU uniqueness per tenant
+	// Validar la unicidad del SKU por inquilino
 	existing, err := m.FindBySKU(item.TenantId, item.Sku)
 	if err == nil {
 		if existing.Id != "" {
@@ -302,6 +311,7 @@ func (m *Module) CreateService(item Service) (Service, error) {
 	return item, nil
 }
 
+// Ejemplo: svc, err := cat.UpdateService(existingSvc)
 func (m *Module) UpdateService(item Service) (Service, error) {
 	if err := item.Validate(model.ActionUpdate); err != nil {
 		return Service{}, ValidationError{Err: err}
@@ -322,7 +332,7 @@ func (m *Module) UpdateService(item Service) (Service, error) {
 		return Service{}, ValidationError{Err: fmt.Err("invalid tax treatment")}
 	}
 
-	// Verify item exists and belongs to tenant
+	// Verificar que el ítem existe y pertenece al inquilino
 	existing, err := m.GetService(item.TenantId, item.Id)
 	if err != nil {
 		return Service{}, err
@@ -341,6 +351,7 @@ func (m *Module) UpdateService(item Service) (Service, error) {
 	return item, nil
 }
 
+// Ejemplo: err := cat.DeactivateService("tenant-1", "svc-id")
 func (m *Module) DeactivateService(tenantId, id string) error {
 	item, err := m.GetService(tenantId, id)
 	if err != nil {
@@ -357,6 +368,7 @@ func (m *Module) DeactivateService(tenantId, id string) error {
 	return nil
 }
 
+// Ejemplo: err := cat.DeleteService("tenant-1", "svc-id")
 func (m *Module) DeleteService(tenantId, id string) error {
 	item, err := m.GetService(tenantId, id)
 	if err != nil {
@@ -377,6 +389,7 @@ func (m *Module) DeleteService(tenantId, id string) error {
 	return nil
 }
 
+// Ejemplo: exists, err := cat.ServiceExists("tenant-1", "svc-id")
 func (m *Module) ServiceExists(tenantId, serviceId string) (bool, error) {
 	item, err := m.GetService(tenantId, serviceId)
 	if err != nil {
@@ -391,6 +404,7 @@ func (m *Module) ServiceExists(tenantId, serviceId string) (bool, error) {
 // ServiceCard devuelve nombre, precio de lista, moneda y estado de un servicio
 // del catálogo. Satisface CatalogReader.ServiceCard de appointment_booking
 // estructuralmente. Ausente, de otro tenant o que no es servicio ⇒ ErrNotFound.
+// Ejemplo: name, price, currency, active, err := cat.ServiceCard("tenant-1", "svc-id")
 func (m *Module) ServiceCard(tenantId, serviceId string) (name string, price float64, currency string, active bool, err error) {
 	if tenantId == "" || serviceId == "" {
 		return "", 0, "", false, ErrNotFound
@@ -403,6 +417,7 @@ func (m *Module) ServiceCard(tenantId, serviceId string) (name string, price flo
 	return item.Name, item.Price, item.Currency, item.IsActive, nil
 }
 
+// Ejemplo: list, err := cat.ListServiceAgreements("tenant-1", "svc-id")
 func (m *Module) ListServiceAgreements(tenantId, serviceId string) ([]ServiceAgreement, error) {
 	var a ServiceAgreement
 	qb := m.db.Query(&a).Where(ServiceAgreement_.TenantId).Eq(tenantId)
@@ -420,6 +435,7 @@ func (m *Module) ListServiceAgreements(tenantId, serviceId string) ([]ServiceAgr
 	return items, nil
 }
 
+// Ejemplo: agr, err := cat.GetServiceAgreement("tenant-1", "agr-id")
 func (m *Module) GetServiceAgreement(tenantId, id string) (ServiceAgreement, error) {
 	var a ServiceAgreement
 	qb := m.db.Query(&a).Where(ServiceAgreement_.Id).Eq(id).Where(ServiceAgreement_.TenantId).Eq(tenantId)
@@ -433,6 +449,7 @@ func (m *Module) GetServiceAgreement(tenantId, id string) (ServiceAgreement, err
 	return a, nil
 }
 
+// Ejemplo: agr, err := cat.UpsertServiceAgreement(ServiceAgreement{TenantId: "tenant-1", ServiceId: "svc-id", Insurer: "Isapre", Price: 15000, IsActive: true})
 func (m *Module) UpsertServiceAgreement(a ServiceAgreement) (ServiceAgreement, error) {
 	action := model.ActionCreate
 	if a.Id != "" {
@@ -457,7 +474,7 @@ func (m *Module) UpsertServiceAgreement(a ServiceAgreement) (ServiceAgreement, e
 		return a, nil
 	}
 
-	// Verify agreement exists and belongs to tenant
+	// Verificar que el acuerdo existe y pertenece al inquilino
 	_, err := m.GetServiceAgreement(a.TenantId, a.Id)
 	if err != nil {
 		return ServiceAgreement{}, err
@@ -472,6 +489,7 @@ func (m *Module) UpsertServiceAgreement(a ServiceAgreement) (ServiceAgreement, e
 	return a, nil
 }
 
+// Ejemplo: err := cat.DeleteServiceAgreement("tenant-1", "agr-id")
 func (m *Module) DeleteServiceAgreement(tenantId, id string) error {
 	a, err := m.GetServiceAgreement(tenantId, id)
 	if err != nil {
@@ -487,10 +505,10 @@ func (m *Module) DeleteServiceAgreement(tenantId, id string) error {
 	return nil
 }
 
-// ModelName is this module's identity: the transport qualifies every op
-// below as "service_catalog.<name>" on the wire, and view.go's two NewXView
-// constructors pass this same constant as view.Ops.Module so the client
-// composes the identical qualified name.
+// ModelName es la identidad de este módulo: el transporte califica cada op
+// debajo como "service_catalog.<name>" en la red, y los dos constructores
+// NewXView de view.go pasan esta misma constante como view.Ops.Module para que
+// el cliente componga el nombre calificado idéntico.
 const ModelName = "service_catalog"
 
 func (m *Module) ModelName() string { return ModelName }

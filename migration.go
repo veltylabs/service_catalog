@@ -9,7 +9,7 @@ type CanonicalSpecialty struct {
 	Name   string
 }
 
-// CanonicalSpecialties defines the list of standard specialties derived from SKU prefixes.
+// CanonicalSpecialties define la lista de especialidades estándar derivadas de los prefijos de SKU.
 var CanonicalSpecialties = []CanonicalSpecialty{
 	{Prefix: "md", Name: "Medicina General"},
 	{Prefix: "do", Name: "Dental (Odontología + Ortodoncia)"},
@@ -32,9 +32,10 @@ type MigrationReport struct {
 	UnmatchedSKUs []string
 }
 
-// MigrateSpecialtiesAndServices seeds canonical specialties for the tenant if missing,
-// and maps existing Services to the corresponding specialty_id based on SKU prefix (sku[:2]).
-// Unmatched items are left unassigned and returned in MigrationReport.UnmatchedSKUs.
+// MigrateSpecialtiesAndServices carga las especialidades base para el inquilino si faltan,
+// y asigna los servicios existentes a su specialty_id correspondiente basado en el prefijo del SKU (sku[:2]).
+// Los ítems sin coincidencia quedan sin asignar y se reportan en MigrationReport.UnmatchedSKUs.
+// Ejemplo: report, err := cat.MigrateSpecialtiesAndServices("tenant-1")
 func (m *Module) MigrateSpecialtiesAndServices(tenantId string) (MigrationReport, error) {
 	report := MigrationReport{}
 

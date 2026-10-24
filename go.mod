@@ -4,14 +4,15 @@ go 1.26.8
 
 require (
 	webtyp.com/ddl v0.0.24
-	webtyp.com/dom v0.13.26
+	webtyp.com/dom v0.13.29
 	webtyp.com/events v0.1.0
 	webtyp.com/fmt v1.0.0
-	webtyp.com/form v0.4.47
+	webtyp.com/form v0.4.52
 	webtyp.com/html v0.0.29
 	webtyp.com/input v0.0.21
 	webtyp.com/json v0.5.30
-	webtyp.com/layout v0.3.64
+	webtyp.com/lang v0.1.9
+	webtyp.com/layout v0.3.70
 	webtyp.com/model v0.2.6
 	webtyp.com/msgtype v0.1.0
 	webtyp.com/orm v0.12.10
@@ -30,7 +31,6 @@ require (
 	webtyp.com/css v0.4.31 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/font v0.0.6 // indirect
-	webtyp.com/icons v0.0.26 // indirect
-	webtyp.com/lang v0.1.9 // indirect
+	webtyp.com/icons v0.0.33 // indirect
 	webtyp.com/widget v0.6.44 // indirect
 )

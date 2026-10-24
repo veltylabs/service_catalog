@@ -6,7 +6,7 @@ import (
 	"webtyp.com/router"
 )
 
-// Operation names, as the transport and the view see them: "<ModelName>.<name>".
+// Nombres de las operaciones, tal como las ven el transporte y la vista: "<ModelName>.<name>".
 const (
 	OpListSpecialties = "list_specialties"
 	OpGetSpecialty    = "get_specialty"
@@ -28,7 +28,8 @@ const (
 	OpDeleteAgreement = "delete_agreement"
 )
 
-// UpsertSpecialtyArgs carries the plural batch for OpUpsertSpecialty.
+// UpsertSpecialtyArgs transporta el lote plural para OpUpsertSpecialty.
+// Ejemplo: args := UpsertSpecialtyArgs{Records: []Specialty{spec1, spec2}}
 type UpsertSpecialtyArgs struct {
 	Records []Specialty
 }
@@ -53,7 +54,8 @@ func (a *UpsertSpecialtyArgs) DecodeFields(r model.FieldReader) {
 	}
 }
 
-// DeleteSpecialtiesArgs carries the IDs to remove for OpDeleteSpecialty.
+// DeleteSpecialtiesArgs transporta los IDs a eliminar para OpDeleteSpecialty.
+// Ejemplo: args := DeleteSpecialtiesArgs{Ids: []string{"id1", "id2"}}
 type DeleteSpecialtiesArgs struct {
 	Ids []string
 }
@@ -78,7 +80,8 @@ func (a *DeleteSpecialtiesArgs) DecodeFields(r model.FieldReader) {
 	}
 }
 
-// UpsertServiceArgs carries the plural batch for OpUpsertService.
+// UpsertServiceArgs transporta el lote plural para OpUpsertService.
+// Ejemplo: args := UpsertServiceArgs{Records: []Service{svc1, svc2}}
 type UpsertServiceArgs struct {
 	Records []Service
 }
@@ -103,7 +106,8 @@ func (a *UpsertServiceArgs) DecodeFields(r model.FieldReader) {
 	}
 }
 
-// DeleteServicesArgs carries the IDs to remove for OpDeleteService.
+// DeleteServicesArgs transporta los IDs a eliminar para OpDeleteService.
+// Ejemplo: args := DeleteServicesArgs{Ids: []string{"id1", "id2"}}
 type DeleteServicesArgs struct {
 	Ids []string
 }
@@ -128,7 +132,8 @@ func (a *DeleteServicesArgs) DecodeFields(r model.FieldReader) {
 	}
 }
 
-// UpdateServiceArgs carries the field patch for OpUpdateService.
+// UpdateServiceArgs transporta el parche de campos para OpUpdateService.
+// Ejemplo: args := UpdateServiceArgs{Ids: []string{"id1"}, Fields: []string{"price"}, Record: Service{Price: 20000}}
 type UpdateServiceArgs struct {
 	Ids    []string
 	Fields []string

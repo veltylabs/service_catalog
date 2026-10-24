@@ -12,7 +12,8 @@ type Data struct {
 	Items       []servicecatalog.Service
 }
 
-// Load creates three canonical specialties and one service in each.
+// Load crea tres especialidades canónicas y un servicio en cada una.
+// Ejemplo: data, err := seed.Load(catalogModule, "tenant-1")
 func Load(m *servicecatalog.Module, tenantID string) (Data, error) {
 	data := Data{}
 

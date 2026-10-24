@@ -4,6 +4,7 @@ import (
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/dom"
 	"webtyp.com/fmt"
+	"webtyp.com/lang"
 	"webtyp.com/layout/crudview"
 	"webtyp.com/layout/platformd"
 	"webtyp.com/model"
@@ -13,6 +14,14 @@ import (
 // errListSpecialties is logged when the specialty options cannot be loaded:
 // the form then has an empty select, never a silent one.
 const errListSpecialties = "service_catalog: could not load specialties for the service form:"
+
+// Textos de ayuda que el chasis muestra en el botón «?» y en la bienvenida de
+// cada pantalla. Las claves están en inglés; la traducción vive en lang.json.
+const (
+	descCatalog     lang.Text = "The services the clinic offers and the specialties that group them. Start with the specialties, then add each service with its price."
+	descServices    lang.Text = "Each service the clinic offers, with its specialty, price and tax treatment. Pick one in the list to edit it, or press + to add a new one."
+	descSpecialties lang.Text = "Specialties group the services (for example, dentistry or kinesiology). Create them first: every service must belong to one."
+)
 
 // Browser construye la vista de este módulo para el registro en modules/browser.go.
 func Browser(caller router.Caller, ids model.IDGenerator, tenantID string) (platformd.UIModule, error) {
@@ -48,8 +57,10 @@ func Browser(caller router.Caller, ids model.IDGenerator, tenantID string) (plat
 	if err != nil {
 		return nil, err
 	}
-	servicesMod := platformd.NewUIModule(ID+".services", "Servicios", IconServices, servicesView)
-	specialtiesMod := platformd.NewUIModule(ID+".specialties", "Especialidades", IconSpecialties, specialtiesView)
+	servicesMod := platformd.Describe(
+		platformd.NewUIModule(ID+".services", "Servicios", IconServices, servicesView), descServices)
+	specialtiesMod := platformd.Describe(
+		platformd.NewUIModule(ID+".specialties", "Especialidades", IconSpecialties, specialtiesView), descSpecialties)
 
 	servicesView.SetOptions("tax_treatment",
 		fmt.KeyValue{Key: servicecatalog.TaxTaxed, Value: "Taxed"},
@@ -85,8 +96,8 @@ func Browser(caller router.Caller, ids model.IDGenerator, tenantID string) (plat
 		servicesView.SetOptions("currency", opts...)
 	})
 
-	return platformd.NewGroupUIModule(ID, Label, IconCatalog, []platformd.UIModule{
+	return platformd.Describe(platformd.NewGroupUIModule(ID, Label, IconCatalog, []platformd.UIModule{
 		servicesMod,
 		specialtiesMod,
-	}), nil
+	}), descCatalog), nil
 }
