@@ -2,8 +2,10 @@
 PLAN: "feat(ui): the catalog explains itself — description on the group, Servicios and Especialidades"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 3510063836519186808
+PR: https://github.com/veltylabs/service_catalog/pull/16
+REVIEWED_COMMIT: 4488db81fed3a55f576dd628e20c8da8bd093db2
 ---
 
 > Read AGENTS.md at the repo root before any change.
