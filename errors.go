@@ -23,15 +23,15 @@ const (
 	ErrUnsupportedCurrency   domainError = "service_catalog: currency not accepted by this catalog"
 )
 
-// decodeError is a request body that could not be read: always 400.
+// decodeError es un cuerpo de solicitud que no se pudo leer: siempre 400.
 type decodeError struct{ err error }
 
 func (d decodeError) Error() string { return msgDecode + d.err.Error() }
 
 const msgDecode = "service_catalog: cannot read the request: "
 
-// writeError answers err with its status and, always, its text — the only thing an HTTP caller
-// sees. 400 = unreadable or invalid input · 404 = not found · 409 = conflict · 500 = anything else.
+// writeError responde a err con su estado y, siempre, su texto — lo único que ve un cliente
+// HTTP. 400 = ilegible o entrada inválida · 404 = no encontrado · 409 = conflicto · 500 = cualquier otra cosa.
 func writeError(ctx router.Context, err error) {
 	ctx.WriteStatus(statusOf(err))
 	ctx.Write([]byte(err.Error()))
@@ -57,7 +57,7 @@ func statusOf(err error) int {
 	return 500
 }
 
-// ValidationError wraps a model validation failure: 400.
+// ValidationError envuelve un fallo de validación del modelo: 400.
 type ValidationError struct {
 	Err error
 }

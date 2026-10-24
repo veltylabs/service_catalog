@@ -9,21 +9,24 @@ import (
 const titleCatalog = "Catálogo"
 const titleSpecialties = "Especialidades"
 
-// Item projects a Service as a view.Item — the ONLY view-specific code this record
-// carries (view.Itemizer). The Presenter's internal index (built from this on Reload)
-// replaces the old manual byID/WithFill lookup.
+// Item proyecta un Service como un view.Item — el ÚNICO código específico de la vista que lleva
+// este registro (view.Itemizer). El índice interno del Presenter (construido a partir de esto en Reload)
+// reemplaza la antigua búsqueda manual byID/WithFill.
+// Ejemplo: item := m.Item()
 func (m *Service) Item() view.Item {
 	return view.Item{ID: m.Id, Label: m.Name, Description: m.Sku}
 }
 
-// Item projects a Specialty as a view.Item (view.Itemizer).
+// Item proyecta un Specialty como un view.Item (view.Itemizer).
+// Ejemplo: item := s.Item()
 func (s *Specialty) Item() view.Item {
 	return view.Item{ID: s.Id, Label: s.Name, Description: s.Prefix}
 }
 
-// NewView builds the catalog item Presenter — the tech-agnostic engine a renderer (crudview,
-// or any other) wraps. It is THIS module's job to build it (importing only view+model+router);
-// the app decides which renderer draws it.
+// NewView construye el Presenter del ítem del catálogo — el motor agnóstico a la tecnología que envuelve
+// un renderizador (crudview, o cualquier otro). Es tarea de ESTE módulo construirlo (importando solo view+model+router);
+// la aplicación decide qué renderizador lo dibuja.
+// Ejemplo: pres := servicecatalog.NewView(caller)
 func NewView(caller router.Caller) view.Presenter {
 	b := view.NewCallerLister(caller,
 		view.Ops{Module: ModelName, List: OpListServices, Save: OpUpsertService, Update: OpUpdateService, Delete: OpDeleteService},
@@ -31,7 +34,8 @@ func NewView(caller router.Caller) view.Presenter {
 	return view.New(b, &Service{}, view.WithTitle(titleCatalog))
 }
 
-// NewSpecialtyView builds the specialty Presenter.
+// NewSpecialtyView construye el Presenter de la especialidad.
+// Ejemplo: pres := servicecatalog.NewSpecialtyView(caller)
 func NewSpecialtyView(caller router.Caller) view.Presenter {
 	b := view.NewCallerLister(caller,
 		view.Ops{Module: ModelName, List: OpListSpecialties, Save: OpUpsertSpecialty, Delete: OpDeleteSpecialty},

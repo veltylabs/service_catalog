@@ -7,8 +7,8 @@ import (
 	"webtyp.com/time"
 )
 
-// The supply recipe of a service: what one performance uses. clinical_encounter reads it (ServiceRecipe) to load the
-// supplies of an attention, and supply_manager takes them out of stock; neither module is imported here.
+// La receta de insumos de un servicio: lo que usa una atención. clinical_encounter lo lee (ServiceRecipe) para cargar los
+// insumos de una atención, y supply_manager los rebaja del stock; ninguno de los dos módulos se importa aquí.
 const (
 	OpListServiceSupplies = "list_service_supplies"
 	OpUpsertServiceSupply = "upsert_service_supply"
@@ -17,7 +17,8 @@ const (
 	resServiceSupply = "service_supply"
 )
 
-// ListServiceSupplies returns the recipe of one service (or of every service when serviceId is ""), in insertion order.
+// ListServiceSupplies devuelve la receta de un servicio (o de todos los servicios si serviceId es ""), en orden de inserción.
+// Ejemplo: recipe, err := cat.ListServiceSupplies("tenant-1", "service-1")
 func (m *Module) ListServiceSupplies(tenantId, serviceId string) ([]ServiceSupply, error) {
 	var proxy ServiceSupply
 	qb := m.db.Query(&proxy).Where(ServiceSupply_.TenantId).Eq(tenantId)
@@ -48,8 +49,9 @@ func (m *Module) getServiceSupply(tenantId, id string) (ServiceSupply, error) {
 	return *got, nil
 }
 
-// UpsertServiceSupply creates a recipe line (no id) or updates one. The service must exist in the tenant (ErrNotFound),
-// the quantity must be > 0 (ErrQuantity) and a supply appears once per service (ErrSupplyLineExists).
+// UpsertServiceSupply crea una línea de receta (sin id) o actualiza una. El servicio debe existir en el inquilino (ErrNotFound),
+// la cantidad debe ser > 0 (ErrQuantity) y un insumo aparece solo una vez por servicio (ErrSupplyLineExists).
+// Ejemplo: out, err := cat.UpsertServiceSupply(ServiceSupply{TenantId: "tenant", ServiceId: "s-1", ItemId: "item-1", Quantity: 2})
 func (m *Module) UpsertServiceSupply(s ServiceSupply) (ServiceSupply, error) {
 	action := model.ActionCreate
 	var existing ServiceSupply
@@ -95,7 +97,8 @@ func (m *Module) UpsertServiceSupply(s ServiceSupply) (ServiceSupply, error) {
 	return s, nil
 }
 
-// DeleteServiceSupply removes one recipe line.
+// DeleteServiceSupply elimina una línea de la receta.
+// Ejemplo: err := cat.DeleteServiceSupply("tenant-1", "supply-1")
 func (m *Module) DeleteServiceSupply(tenantId, id string) error {
 	s, err := m.getServiceSupply(tenantId, id)
 	if err != nil {
@@ -104,9 +107,10 @@ func (m *Module) DeleteServiceSupply(tenantId, id string) error {
 	return m.db.Delete(&s, orm.Eq(ServiceSupply_.Id, s.Id), orm.Eq(ServiceSupply_.TenantId, s.TenantId))
 }
 
-// ServiceRecipe is the reader other modules declare in a narrow interface of their own: the supply item ids of a service's
-// recipe and the quantity of each, at the same index. An unknown or foreign service is ErrNotFound; a service without
-// recipe returns two empty slices.
+// ServiceRecipe es el lector que otros módulos declaran en una interfaz propia estrecha: los ids de ítem de insumo de la
+// receta de un servicio y la cantidad de cada uno, en el mismo índice. Un servicio desconocido o ajeno devuelve ErrNotFound;
+// un servicio sin receta devuelve dos slices vacíos.
+// Ejemplo: itemIds, qtys, err := cat.ServiceRecipe("tenant-1", "service-1")
 func (m *Module) ServiceRecipe(tenantId, serviceId string) (itemIds []string, quantities []float64, err error) {
 	if _, err := m.GetService(tenantId, serviceId); err != nil {
 		return nil, nil, err

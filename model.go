@@ -5,7 +5,7 @@ import (
 	"webtyp.com/model"
 )
 
-// Helpers to satisfy ormc v0.9.24 AST static type parser:
+// Helpers para satisfacer el parser de tipos estático AST de ormc v0.9.24:
 var (
 	Checkbox_FieldBool = input.Checkbox()
 	Decimal_FieldFloat = input.Decimal()
@@ -81,8 +81,8 @@ var ServiceAgreementModel = model.Definition{
 	},
 }
 
-// ServiceSupplyModel is one line of the supply recipe of a service: what one performance of the service uses. item_id is a
-// soft reference to an item of supply_manager (this module never imports it); quantity is in the item's own unit.
+// ServiceSupplyModel es una línea de la receta de insumos de un servicio: lo que usa una atención. item_id es una
+// referencia suave a un ítem de supply_manager (este módulo nunca lo importa); quantity está en la unidad del ítem.
 var ServiceSupplyModel = model.Definition{
 	Name: "service_supply",
 	Fields: model.Fields{

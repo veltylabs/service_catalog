@@ -2,13 +2,12 @@ package ui
 
 import "webtyp.com/svg"
 
-// ID is this module's identity: RBAC resource prefix on the server, nav
-// route on the client. "service", not "service_catalog" — the wire-facing
-// name the rest of the app already keys off (RBAC, nav, tests), independent
-// of this package's own name.
+// ID es la identidad de este módulo: el prefijo del recurso RBAC en el servidor,
+// la ruta de navegación en el cliente. "service_catalog" es el nombre que el resto de la
+// aplicación ya utiliza (RBAC, nav, tests), independiente del nombre propio de este paquete.
 const ID = "service_catalog"
 
-// Label is the nav item's display text.
+// Label es el texto a mostrar en el ítem de navegación.
 const Label = "Catálogo"
 
 const (

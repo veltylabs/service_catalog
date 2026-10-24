@@ -1,72 +1,65 @@
-# Service Catalog Architecture
+# Arquitectura del Catálogo de Servicios
 
-## Domain Scope
-The `service-catalog` module manages the catalog of services and their specialties for the Velty ecosystem (products and supplies live in `pharmacy_manager` and `supply_manager`). It serves as the source of truth for other modules, such as `appointment-booking`.
+## Alcance del Dominio
+El módulo `service-catalog` gestiona el catálogo de servicios y sus especialidades para el ecosistema Velty (los productos y suministros viven en `pharmacy_manager` y `supply_manager`). Sirve como fuente de verdad para otros módulos, como `appointment-booking`.
 
-## Entities
-- **Specialty**: taxonomía con un código de referencia de dos letras (prefijo de los SKU).
-- **Service**: A service the business provides. References a `Specialty` via `specialty_id`. Contains SKU, name, description, price, currency and an optional `tax_treatment` (`TAXED` or `EXEMPT`; the rate is not stored here).
-  - *Design Note*: other modules (like `appointment-booking`) need the *capability* of being bookable, kept in one place: `ServiceExists`.
-- **Agreement**: Represents a billing/insurer agreement (convenio) associated with a service. A service can have multiple agreements, each specifying an insurer (e.g., FONASA, Isapre X), code, price, and active status.
+## Entidades
+- **Specialty** (Especialidad): taxonomía con un código de referencia de dos letras (prefijo de los SKU).
+- **Service** (Servicio): Un servicio que la empresa proporciona. Referencia a un `Specialty` mediante `specialty_id`. Contiene SKU, nombre, descripción, precio, moneda y un `tax_treatment` opcional (`TAXED` o `EXEMPT`; la tasa no se almacena aquí).
+  - *Nota de Diseño*: otros módulos (como `appointment-booking`) necesitan la *capacidad* de ser reservable, mantenida en un solo lugar: `ServiceExists`.
+- **Agreement** (Convenio): Representa un convenio de facturación/aseguradora asociado a un servicio. Un servicio puede tener múltiples convenios, cada uno especificando una aseguradora (ej., FONASA, Isapre X), código, precio, y estado activo.
 
-## Patterns
-- **Reusable-module harness**: the module is coupled only to published contracts, not to concrete
-  infrastructure — see `AGENTS.md` (this repo's root) for the full whitelist/blacklist this module
-  must hold to:
-    - `orm.DB` for storage (backend-agnostic — wraps whatever `storage.Conn` the app injects).
-    - `ddl.CreateTable`/`ddl.Sync` (over `db.RawConn()`) for the module's own schema migration in
-      `New()` — replaces the removed `orm.DB.CreateTable`.
-    - `router.OpModule` (`ModelName()` + `MountOps(reg router.OpRegistry)`) for transport — the module
-      never sees `router.Router`/`router.APIModule`, and never imports `tinywasm/mcp`.
-    - `model.IDGenerator` for identity (`Deps.IDs`, required — the module never builds its own).
-    - `events.Publisher` for event-driven updates (`Deps.Publisher`, optional — `nil` disables
-      publishing silently).
-    - `view.Presenter` (`NewView(caller router.Caller) view.Presenter`, `NewSpecialtyView(caller router.Caller) view.Presenter`) for UI, built with only
-      `view`+`model`+`router` — the app chooses the renderer. The specialty is a form field loaded with `SetOptions`; no picker beside the title.
-    - Tests run against `storage/mem`, never `tinywasm/sqlite`.
-- **Multi-tenancy**: Every specialty, service, and agreement is associated with a `tenant_id`. SKU and prefix uniqueness are enforced per tenant.
-- **Accepted Currencies**: `Deps.Currencies` sets the currencies the module accepts (ISO 4217). If empty, it defaults to CLP.
-- **Typed events**: every published event carries a `model.Encodable` payload (`&Specialty`/`&Service`/`&Agreement`),
-  never a bare `map`.
+## Patrones
+- **Arnés de módulo reutilizable**: el módulo está acoplado solo a contratos publicados, no a infraestructura concreta — ver `AGENTS.md` (la raíz de este repo) para la lista completa de permitidos/prohibidos a la que debe adherirse este módulo:
+    - `orm.DB` para el almacenamiento (agnóstico al backend — envuelve cualquier `storage.Conn` que la app inyecte).
+    - `ddl.CreateTable`/`ddl.Sync` (sobre `db.RawConn()`) para la migración del propio esquema del módulo en `New()` — reemplaza al obsoleto `orm.DB.CreateTable`.
+    - `router.OpModule` (`ModelName()` + `MountOps(reg router.OpRegistry)`) para el transporte — el módulo nunca ve `router.Router`/`router.APIModule`, y nunca importa `tinywasm/mcp`.
+    - `model.IDGenerator` para la identidad (`Deps.IDs`, requerido — el módulo nunca construye el suyo propio).
+    - `events.Publisher` para actualizaciones controladas por eventos (`Deps.Publisher`, opcional — `nil` desactiva la publicación silenciosamente).
+    - `view.Presenter` (`NewView(caller router.Caller) view.Presenter`, `NewSpecialtyView(caller router.Caller) view.Presenter`) para UI, construido solo con `view`+`model`+`router` — la aplicación elige el renderizador. La especialidad es un campo de formulario cargado con `SetOptions`; sin selector junto al título.
+    - Las pruebas se ejecutan contra `storage/mem`, nunca `tinywasm/sqlite`.
+- **Multi-inquilino**: Toda especialidad, servicio y convenio está asociado con un `tenant_id`. La unicidad de SKU y prefijo se imponen por inquilino.
+- **Monedas Aceptadas**: `Deps.Currencies` establece las monedas que acepta el módulo (ISO 4217). Si está vacío, por defecto es CLP.
+- **Eventos tipados**: cada evento publicado lleva un payload `model.Encodable` (`&Specialty`/`&Service`/`&Agreement`), nunca un simple `map`.
 
-## Ops (via `MountOps`)
-| Op | Action | Resource | Description |
+## Operaciones (vía `MountOps`)
+| Op | Acción | Recurso | Descripción |
 |-----------|--------|----------|-------------|
-| `list_specialties` | `r` | `specialty` | List specialties for a tenant |
-| `get_specialty` | `r` | `specialty` | Get specialty by ID |
-| `upsert_specialty` | `c`\|`u` | `specialty` | Create or update a specialty |
-| `delete_specialty` | `d` | `specialty` | Delete a specialty |
-| `list_services` | `r` | `service` | List services for a tenant |
-| `get_service` | `r` | `service` | Get service by ID |
-| `find_service_by_sku` | `r` | `service` | Find service by SKU |
-| `create_service` | `c` | `service` | Create new service |
-| `update_service` | `u` | `service` | Update existing service |
-| `upsert_service` | `c`\|`u` | `service` | Create or update service |
-| `deactivate_service` | `u` | `service` | Soft-delete service |
-| `delete_service` | `d` | `service` | Hard-delete service |
-| `list_agreements` | `r` | `service_agreement` | List agreements of a service |
-| `upsert_agreement` | `c`\|`u` | `service_agreement` | Create or update an agreement |
-| `delete_agreement` | `d` | `service_agreement` | Delete an agreement |
+| `list_specialties` | `r` | `specialty` | Listar especialidades para un inquilino |
+| `get_specialty` | `r` | `specialty` | Obtener especialidad por ID |
+| `upsert_specialty` | `c`\|`u` | `specialty` | Crear o actualizar una especialidad |
+| `delete_specialty` | `d` | `specialty` | Eliminar una especialidad |
+| `list_services` | `r` | `service` | Listar servicios para un inquilino |
+| `get_service` | `r` | `service` | Obtener servicio por ID |
+| `find_service_by_sku` | `r` | `service` | Encontrar servicio por SKU |
+| `create_service` | `c` | `service` | Crear nuevo servicio |
+| `update_service` | `u` | `service` | Actualizar servicio existente |
+| `upsert_service` | `c`\|`u` | `service` | Crear o actualizar servicio |
+| `deactivate_service` | `u` | `service` | Borrado lógico de servicio |
+| `delete_service` | `d` | `service` | Borrado físico de servicio |
+| `list_agreements` | `r` | `service_agreement` | Listar convenios de un servicio |
+| `upsert_agreement` | `c`\|`u` | `service_agreement` | Crear o actualizar un convenio |
+| `delete_agreement` | `d` | `service_agreement` | Eliminar un convenio |
 
-## Composition Root Example
+## Ejemplo de Raíz de Composición
 ```go
 cat, _ := servicecatalog.New(db, servicecatalog.Deps{
     IDs:       idGenerator,   // model.IDGenerator
-    Publisher: eventPublisher, // events.Publisher, nil disables publishing
+    Publisher: eventPublisher, // events.Publisher, nil desactiva la publicación
 })
 cat.MountOps(opRegistry) // router.OpRegistry
 view := cat.NewView(caller) // router.Caller -> view.Presenter
-// Catalog implements CatalogReader interface for other modules
+// Catalog implementa la interfaz CatalogReader para otros módulos
 appt := appointmentbooking.New(db, appointmentbooking.Deps{Catalog: cat, ...})
 ```
 
-### Database Note
-There is no production data. Development databases are recreated: `Migrate` creates `specialty`, `service` and `service_agreement` (in that FK order). It never drops the old `catalog_item` / `catalog_agreement` tables.
+### Nota de Base de Datos
+No hay datos de producción. Las bases de datos de desarrollo se recrean: `Migrate` crea `specialty`, `service` y `service_agreement` (en ese orden de dependencias FK). Nunca descarta las tablas antiguas `catalog_item` / `catalog_agreement`.
 
-## Supply recipe
+## Receta de insumos
 
-A service has a **recipe**: the supplies one performance uses (`service_supply`: service, `item_id` of `supply_manager` as a
-soft reference, quantity > 0, each supply once per service). `ServiceRecipe(tenantId, serviceId) (itemIds []string,
-quantities []float64, err error)` returns it with plain types, so `clinical_encounter` declares it in a narrow interface of
-its own and the application passes this module. This module never imports `supply_manager`; the supply picker of the
-service screen comes with the screens that follow the module-guidance rules.
+Un servicio tiene una **receta**: los insumos que usa una atención (`service_supply`: servicio, `item_id` de `supply_manager` como una
+referencia blanda, cantidad > 0, cada insumo una vez por servicio). `ServiceRecipe(tenantId, serviceId) (itemIds []string,
+quantities []float64, err error)` la devuelve con tipos simples, así que `clinical_encounter` la declara en una interfaz estrecha propia
+y la aplicación le pasa este módulo. Este módulo nunca importa `supply_manager`; el selector de insumos de la
+pantalla del servicio viene con las pantallas que siguen las reglas de guía del módulo.
