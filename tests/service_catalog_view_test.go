@@ -8,25 +8,34 @@ import (
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"github.com/veltylabs/service_catalog/ui"
 	"webtyp.com/json"
-	"webtyp.com/layout/crudview"
-	"webtyp.com/layout/platformd"
 	"webtyp.com/model"
-	"webtyp.com/msgtype"
 	"webtyp.com/view"
 )
 
-func TestView_Creation(t *testing.T) {
+func TestView_ScreensStructure(t *testing.T) {
 	mock := &mockCaller{}
-	m, err := ui.Browser(mock, &testIDGen{}, "")
-	if err != nil {
-		t.Fatalf("ui.Browser: %v", err)
+	screens := ui.Screens(mock)
+	if len(screens) != 1 {
+		t.Fatalf("expected 1 root screen, got %d", len(screens))
 	}
 
-	if m.ModelName() != "service_catalog" {
-		t.Errorf("expected ModelName %q, got %q", "service_catalog", m.ModelName())
+	root := screens[0]
+	if root.ID != ui.ID {
+		t.Errorf("expected root ID %q, got %q", ui.ID, root.ID)
 	}
-	if m.Label() != "Catálogo" {
-		t.Errorf("expected Label %q, got %q", "Catálogo", m.Label())
+	if root.Label != ui.Label {
+		t.Errorf("expected root Label %q, got %q", ui.Label, root.Label)
+	}
+
+	if len(root.Children) != 2 {
+		t.Fatalf("expected 2 children, got %d", len(root.Children))
+	}
+
+	if root.Children[0].Label != "Servicios" {
+		t.Errorf("expected first child Label 'Servicios', got %q", root.Children[0].Label)
+	}
+	if root.Children[1].Label != "Especialidades" {
+		t.Errorf("expected second child Label 'Especialidades', got %q", root.Children[1].Label)
 	}
 }
 
@@ -48,165 +57,90 @@ func TestView_LoadList(t *testing.T) {
 		},
 	}
 
-	m, err := ui.Browser(mock, &testIDGen{}, "")
-	if err != nil {
-		t.Fatalf("ui.Browser: %v", err)
-	}
+	screens := ui.Screens(mock)
+	pres := screens[0].Children[0].Presenter
 
-	group, ok := m.(platformd.GroupModule)
-	if !ok {
-		t.Fatalf("expected platformd.GroupModule, got %T", m)
-	}
-	children := group.Children()
-	if len(children) != 2 {
-		t.Fatalf("expected 2 children, got %d", len(children))
-	}
-	if children[0].Label() != "Servicios" {
-		t.Errorf("expected first child to be 'Servicios', got %q", children[0].Label())
-	}
-	if children[1].Label() != "Especialidades" {
-		t.Errorf("expected second child to be 'Especialidades', got %q", children[1].Label())
-	}
-
-	cv, ok := children[0].View().(*crudview.CrudView)
-	if !ok {
-		t.Fatalf("expected child 0 (Servicios) to be a *crudview.CrudView, got %T", children[0].View())
-	}
-	cv.Init(nil)
-	m.Activate()
+	pres.Reload(nil)
 
 	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpListServices {
 		t.Errorf("expected last op %q, got %q", servicecatalog.ModelName+"."+servicecatalog.OpListServices, mock.lastOp)
 	}
-}
 
-type mockNotifier struct {
-	lastType msgtype.Type
-	lastMsg  string
-}
-
-func (n *mockNotifier) Notify(t msgtype.Type, msg string, dur platformd.Duration) {
-	n.lastType = t
-	n.lastMsg = msg
-}
-
-func TestView_UsesNotifierAndCRUD(t *testing.T) {
-	mock := &mockCaller{}
-	m, err := ui.Browser(mock, &testIDGen{}, "")
-	if err != nil {
-		t.Fatalf("ui.Browser: %v", err)
+	items := pres.Items()
+	if len(items) != 2 {
+		t.Fatalf("expected 2 items, got %d", len(items))
 	}
-
-	notifierMod, ok := m.(platformd.UsesNotifier)
-	if !ok {
-		t.Fatalf("expected platformd.UsesNotifier, got %T", m)
-	}
-
-	notifier := &mockNotifier{}
-	notifierMod.UseNotifier(notifier)
-
-	group := m.(platformd.GroupModule)
-	children := group.Children()
-	servicesCv, ok := children[0].View().(*crudview.CrudView)
-	if !ok {
-		t.Fatalf("expected *crudview.CrudView, got %T", children[0].View())
-	}
-	specsCv, ok := children[1].View().(*crudview.CrudView)
-	if !ok {
-		t.Fatalf("expected *crudview.CrudView, got %T", children[1].View())
-	}
-
-	// Verify that the framework auto-wired the notifier to the views
-	if _, ok := any(servicesCv).(platformd.UsesNotifier); !ok {
-		t.Fatal("expected servicesCv to implement platformd.UsesNotifier")
-	}
-	if _, ok := any(specsCv).(platformd.UsesNotifier); !ok {
-		t.Fatal("expected specsCv to implement platformd.UsesNotifier")
-	}
-	if servicesCv.NewRecord == nil {
-		t.Error("expected servicesCv.NewRecord to be configured")
-	}
-	if specsCv.NewRecord == nil {
-		t.Error("expected specsCv.NewRecord to be configured")
+	if items[0].Label != "Service One" {
+		t.Errorf("expected item 0 label 'Service One', got %q", items[0].Label)
 	}
 }
 
-func TestView_AddSaveItemWorkflow(t *testing.T) {
-	var savedItems []*servicecatalog.Service
+func TestView_SaveAndDelete(t *testing.T) {
+	seed := &servicecatalog.Service{
+		Id: "svc1", TenantId: "tenant1", Sku: "SKU1", Name: "Service One",
+		Description: "General consultation service",
+		Price:       100, Currency: "CLP", IsActive: true, UpdatedAt: 1,
+	}
+
 	mock := &mockCaller{
 		onCall: func(op string, args model.Encodable, into model.Decodable) error {
-			t.Logf("onCall: op=%s, args=%T (%+v)", op, args, args)
 			switch op {
 			case servicecatalog.ModelName + "." + servicecatalog.OpListServices:
-				list := servicecatalog.ServiceList{}
-				for _, it := range savedItems {
-					list = append(list, it)
-				}
+				list := servicecatalog.ServiceList{seed}
 				var out []byte
-				if err := json.Encode(&list, &out); err != nil {
-					return err
-				}
+				_ = json.Encode(&list, &out)
 				return json.Decode(string(out), into)
-			case servicecatalog.ModelName + "." + servicecatalog.OpListSpecialties:
-				list := servicecatalog.SpecialtyList{
-					&servicecatalog.Specialty{Id: "spec-1", Name: "Medicina General"},
-				}
-				var out []byte
-				if err := json.Encode(&list, &out); err != nil {
-					return err
-				}
-				return json.Decode(string(out), into)
-			case servicecatalog.ModelName + "." + servicecatalog.OpUpsertService:
-				var out []byte
-				if err := json.Encode(args, &out); err != nil {
-					return err
-				}
-				var upsertArgs servicecatalog.UpsertServiceArgs
-				if err := json.Decode(string(out), &upsertArgs); err != nil {
-					return err
-				}
-				for _, it := range upsertArgs.Records {
-					item := it
-					savedItems = append(savedItems, &item)
-				}
-				return nil
 			}
 			return nil
 		},
 	}
 
-	m, err := ui.Browser(mock, &testIDGen{}, "test-tenant")
-	if err != nil {
-		t.Fatalf("ui.Browser: %v", err)
+	screens := ui.Screens(mock)
+	pres := screens[0].Children[0].Presenter
+
+	pres.Reload(nil)
+
+	record := pres.Select(seed.Id)
+	if record == nil {
+		t.Fatal("expected Select to return the cached record")
 	}
 
-	notifier := &mockNotifier{}
-	m.(platformd.UsesNotifier).UseNotifier(notifier)
-
-	group := m.(platformd.GroupModule)
-	servicesCv := group.Children()[0].View().(*crudview.CrudView)
-	servicesCv.Init(nil)
-	m.Activate()
-
-	// Sku & Name entered
-	rec := servicesCv.NewRecord().(*servicecatalog.Service)
-	rec.Sku = "SKU-99"
-	rec.Name = "Servicio Neurología"
-
-	saver := servicesCv.Presenter.(view.Saver)
-	saver.Save([]model.Model{rec}, func(err error) {
-		if err != nil {
-			t.Fatalf("save error: %v", err)
-		}
-	})
-
-	if len(savedItems) != 1 {
-		t.Fatalf("expected 1 saved item, got %d", len(savedItems))
+	saver, ok := pres.(view.Saver)
+	if !ok {
+		t.Fatal("expected Presenter to implement view.Saver")
 	}
-	if savedItems[0].Sku != "SKU-99" {
-		t.Errorf("expected Sku 'SKU-99', got %q", savedItems[0].Sku)
+	var serr error
+	saver.Save([]model.Model{record}, func(err error) { serr = err })
+	if serr != nil {
+		t.Fatalf("Save: %v", serr)
 	}
-	if savedItems[0].Name != "Servicio Neurología" {
-		t.Errorf("expected Name 'Servicio Neurología', got %q", savedItems[0].Name)
+	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpUpsertService {
+		t.Errorf("expected last op %q after save, got %q", servicecatalog.ModelName+"."+servicecatalog.OpUpsertService, mock.lastOp)
+	}
+
+	updater, ok := pres.(view.Updater)
+	if !ok {
+		t.Fatal("expected Presenter to implement view.Updater")
+	}
+	var uerr error
+	updater.Update([]string{seed.Id}, record, []string{"name"}, func(err error) { uerr = err })
+	if uerr != nil {
+		t.Fatalf("Update: %v", uerr)
+	}
+	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpUpdateService {
+		t.Errorf("expected last op %q after update, got %q", servicecatalog.ModelName+"."+servicecatalog.OpUpdateService, mock.lastOp)
+	}
+
+	deleter, ok := pres.(view.Deleter)
+	if !ok {
+		t.Fatal("expected Presenter to implement view.Deleter")
+	}
+	var derr error
+	deleter.Delete([]string{seed.Id}, func(err error) { derr = err })
+	if derr != nil {
+		t.Fatalf("Delete: %v", derr)
+	}
+	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpDeleteService {
+		t.Errorf("expected last op %q after delete, got %q", servicecatalog.ModelName+"."+servicecatalog.OpDeleteService, mock.lastOp)
 	}
 }

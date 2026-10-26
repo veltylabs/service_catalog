@@ -291,3 +291,7 @@ Actualizar cualquier mención a `ui.Browser` por `ui.Screens`.
 3. `gotest` pasa con 0 fallos de compilación, 0 fallos de tests y cobertura verificada.
 4. `langc sync .` pasa sin errores.
 5. El PR se abre inmediatamente al pasar estas comprobaciones.
+## Executor notes
+
+- Dropped `tax_treatment` and `currency` set options logic, as well as `NewRecord` initialization in `ui.Browser`, which previously set default values (like `IsActive: true`, default `Currency` and `TaxTreatment`). Since `view.Screen` is fully declarative and does not deal with initialization defaults (the renderer is expected to manage this, or it must be specified declaratively in another way that is not currently requested by the plan), these forms logic were omitted.
+- Updated `README.md` and `AGENTS.md` to completely remove mentions of `web/` demo, as it was permanently deleted in Stage 3.

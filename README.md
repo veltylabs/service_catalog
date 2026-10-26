@@ -67,11 +67,10 @@ service, _ := module.CreateService(servicecatalog.Service{
 
 ## Vista y demo
 
-Este módulo contiene su propio componente UI (`ui/`), datos semilla (`seed/`) y una demo ejecutable en el navegador (`web/`).
+Este módulo contiene su propio componente UI (`ui/`) y datos semilla (`seed/`).
 
-- **`ui/`**: Exporta `ID` (`catalog_item`), `Label` (`Catálogo`), y `Browser(caller, ids, tenantID)`. La especialidad es un campo de formulario cargado con `SetOptions`; sin selector junto al título. Cada pantalla lleva una descripción de sí misma (`platformd.Describe`).
+- **`ui/`**: Exporta `ID` (`catalog_item`), `Label` (`Catálogo`), y `Screens(caller)`. La especialidad se configura como un `view.Lookup`; sin selector junto al título. Cada pantalla lleva una descripción de sí misma a través de opciones como `view.WithDescription`.
 - **`seed/`**: Exporta `seed.Load(module, tenantID)`, poblando 3 especialidades canónicas y 1 servicio en cada una.
-- **`web/`**: Demo ejecutable en WASM. Ejecuta `webtyp` en la raíz del repositorio para abrir la demo — en el navegador, en memoria, sin inicio de sesión.
 
 ## Archivos Clave
 | Archivo | Propósito |
@@ -85,5 +84,4 @@ Este módulo contiene su propio componente UI (`ui/`), datos semilla (`seed/`) y
 | `model_orm.go` | Ayudantes ORM generados |
 | `ui/` | Presentador de vista del módulo y componentes |
 | `seed/` | Cargador de datos de ejemplo para demo |
-| `web/` | Punto de entrada para demo en navegador WASM |
 | `tests/` | Pruebas funcionales y unitarias |
