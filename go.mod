@@ -12,7 +12,7 @@ require (
 	webtyp.com/input v0.0.21
 	webtyp.com/json v0.5.30
 	webtyp.com/lang v0.1.10
-	webtyp.com/layout v0.3.70
+	webtyp.com/layout v0.3.75
 	webtyp.com/model v0.2.6
 	webtyp.com/msgtype v0.1.0
 	webtyp.com/orm v0.12.10
@@ -21,13 +21,13 @@ require (
 	webtyp.com/svg v0.3.30
 	webtyp.com/time v0.6.2
 	webtyp.com/unixid v0.3.1
-	webtyp.com/view v0.6.44
+	webtyp.com/view v0.6.45
 )
 
 require (
 	webtyp.com/calendar v0.1.0 // indirect
 	webtyp.com/color v0.1.3 // indirect
-	webtyp.com/components v0.8.38 // indirect
+	webtyp.com/components v0.8.51 // indirect
 	webtyp.com/css v0.4.31 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/font v0.0.6 // indirect
