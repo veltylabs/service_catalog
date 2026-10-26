@@ -3,8 +3,10 @@ PLAN: "feat: migrate ui to view.Screen and drop layout dependency"
 TAG: v0.6.5
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 9604813858897086912
+PR: https://github.com/veltylabs/service_catalog/pull/17
+REVIEWED_COMMIT: 4997abe04417ea0b135c8594318257529c68c835
 ---
 
 > Read AGENTS.md at the repo root before any change.
