@@ -6,32 +6,37 @@ import (
 	"testing"
 
 	"github.com/veltylabs/service_catalog/ui"
-	"webtyp.com/layout/platformd"
 )
 
 // Cada pantalla del catálogo se explica sola: el grupo y sus dos hijos
-// implementan platformd.Described con un texto no vacío.
+// validan contra view.Screen y tienen descripciones no vacías.
 func TestBrowser_EveryScreenIsDescribed(t *testing.T) {
-	screen, err := ui.Browser(&mockCaller{}, &testIDGen{}, "")
-	if err != nil {
-		t.Fatalf("ui.Browser: %v", err)
+	screens := ui.Screens(&mockCaller{})
+	if len(screens) != 1 {
+		t.Fatalf("expected 1 root group screen, got %d", len(screens))
 	}
-	group, ok := screen.(platformd.GroupModule)
-	if !ok {
-		t.Fatalf("expected a platformd.GroupModule, got %T", screen)
+	root := screens[0]
+	if err := root.Validate(); err != nil {
+		t.Fatalf("root screen validation failed: %v", err)
 	}
-	all := append([]platformd.UIModule{screen}, group.Children()...)
-	if len(all) != 3 {
-		t.Fatalf("expected the group and 2 children, got %d screens", len(all))
+	if root.ID != ui.ID {
+		t.Errorf("root ID = %q, want %q", root.ID, ui.ID)
 	}
-	for _, m := range all {
-		d, ok := m.(platformd.Described)
-		if !ok {
-			t.Errorf("%s must implement platformd.Described", m.ModelName())
-			continue
+	if root.Help == "" {
+		t.Errorf("root screen has empty help")
+	}
+	if len(root.Children) != 2 {
+		t.Fatalf("expected 2 children, got %d", len(root.Children))
+	}
+	for i, c := range root.Children {
+		if err := c.Validate(); err != nil {
+			t.Fatalf("child %d validation failed: %v", i, err)
 		}
-		if d.Description() == "" {
-			t.Errorf("%s has an empty description", m.ModelName())
+		if c.Permission == "" {
+			t.Errorf("child %d permission is empty", i)
+		}
+		if c.Presenter.Description() == "" {
+			t.Errorf("child %d presenter must have a non-empty description", i)
 		}
 	}
 }

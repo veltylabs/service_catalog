@@ -2,18 +2,10 @@ package ui
 
 import (
 	servicecatalog "github.com/veltylabs/service_catalog"
-	"webtyp.com/dom"
-	"webtyp.com/fmt"
 	"webtyp.com/lang"
-	"webtyp.com/layout/crudview"
-	"webtyp.com/layout/platformd"
-	"webtyp.com/model"
 	"webtyp.com/router"
+	"webtyp.com/view"
 )
-
-// errListSpecialties is logged when the specialty options cannot be loaded:
-// the form then has an empty select, never a silent one.
-const errListSpecialties = "service_catalog: could not load specialties for the service form:"
 
 // Textos de ayuda que el chasis muestra en el botón «?» y en la bienvenida de
 // cada pantalla. Las claves están en inglés; la traducción vive en lang.json.
@@ -23,81 +15,33 @@ const (
 	descSpecialties lang.Text = "Specialties group the services (for example, dentistry or kinesiology). Create them first: every service must belong to one."
 )
 
-// Browser construye la vista de este módulo para el registro en modules/browser.go.
-func Browser(caller router.Caller, ids model.IDGenerator, tenantID string) (platformd.UIModule, error) {
-	defaultCurrency := servicecatalog.CurrencyCLP
-
-	servicesView, err := crudview.New(crudview.Config{
-		ParentID:  ID + ".services",
-		Presenter: servicecatalog.NewView(caller),
-		IDs:       ids,
-		NewRecord: func() model.Model {
-			return &servicecatalog.Service{
-				TenantId:     tenantID,
-				Currency:     defaultCurrency,
-				TaxTreatment: servicecatalog.TaxExempt,
-				IsActive:     true,
-			}
+// Screens declara las pantallas que este módulo ofrece al menú de la app.
+//
+// Ejemplo: screens := ui.Screens(caller)
+func Screens(caller router.Caller) []view.Screen {
+	return []view.Screen{{
+		ID:    ID,
+		Label: Label,
+		Icon:  string(IconCatalog),
+		Help:  descCatalog,
+		Children: []view.Screen{
+			{
+				ID:         ID + ".services",
+				Label:      "Servicios",
+				Icon:       string(IconServices),
+				Permission: "service",
+				Presenter:  servicecatalog.NewView(caller, view.WithDescription(descServices)),
+				Lookups: []view.Lookup{
+					{Field: "specialty_id", Source: servicecatalog.NewSpecialtyView(caller)},
+				},
+			},
+			{
+				ID:         ID + ".specialties",
+				Label:      "Especialidades",
+				Icon:       string(IconSpecialties),
+				Permission: "specialty",
+				Presenter:  servicecatalog.NewSpecialtyView(caller, view.WithDescription(descSpecialties)),
+			},
 		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	specialtiesView, err := crudview.New(crudview.Config{
-		ParentID:  ID + ".specialties",
-		Presenter: servicecatalog.NewSpecialtyView(caller),
-		IDs:       ids,
-		NewRecord: func() model.Model {
-			return &servicecatalog.Specialty{
-				IsPublished: true,
-			}
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	servicesMod := platformd.Describe(
-		platformd.NewUIModule(ID+".services", "Servicios", IconServices, servicesView), descServices)
-	specialtiesMod := platformd.Describe(
-		platformd.NewUIModule(ID+".specialties", "Especialidades", IconSpecialties, specialtiesView), descSpecialties)
-
-	servicesView.SetOptions("tax_treatment",
-		fmt.KeyValue{Key: servicecatalog.TaxTaxed, Value: "Taxed"},
-		fmt.KeyValue{Key: servicecatalog.TaxExempt, Value: "Exempt"},
-	)
-
-	out := &servicecatalog.SpecialtyList{}
-	caller.Call(servicecatalog.ModelName+"."+servicecatalog.OpListSpecialties, nil, out, func(err error) {
-		if err != nil {
-			dom.Log(errListSpecialties, err)
-			return
-		}
-		var opts []fmt.KeyValue
-		for _, s := range *out {
-			opts = append(opts, fmt.KeyValue{Key: s.Id, Value: s.Name})
-		}
-		servicesView.SetOptions("specialty_id", opts...)
-	})
-
-	cur := &servicecatalog.CurrencyOptionList{}
-	caller.Call(servicecatalog.ModelName+"."+servicecatalog.OpListCurrencies, nil, cur, func(err error) {
-		if err != nil {
-			dom.Log("service_catalog: could not load currencies for the service form:", err)
-			return
-		}
-		opts := make([]fmt.KeyValue, 0, len(*cur))
-		for _, c := range *cur {
-			opts = append(opts, fmt.KeyValue{Key: c.Code, Value: c.Code})
-		}
-		if len(opts) > 0 {
-			defaultCurrency = opts[0].Key
-		}
-		servicesView.SetOptions("currency", opts...)
-	})
-
-	return platformd.Describe(platformd.NewGroupUIModule(ID, Label, IconCatalog, []platformd.UIModule{
-		servicesMod,
-		specialtiesMod,
-	}), descCatalog), nil
+	}}
 }

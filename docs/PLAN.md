@@ -3,8 +3,10 @@ PLAN: "feat: migrate ui to view.Screen and drop layout dependency"
 TAG: v0.6.5
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 9604813858897086912
+PR: https://github.com/veltylabs/service_catalog/pull/17
+REVIEWED_COMMIT: 4997abe04417ea0b135c8594318257529c68c835
 ---
 
 > Read AGENTS.md at the repo root before any change.
@@ -291,3 +293,7 @@ Actualizar cualquier mención a `ui.Browser` por `ui.Screens`.
 3. `gotest` pasa con 0 fallos de compilación, 0 fallos de tests y cobertura verificada.
 4. `langc sync .` pasa sin errores.
 5. El PR se abre inmediatamente al pasar estas comprobaciones.
+## Executor notes
+
+- Dropped `tax_treatment` and `currency` set options logic, as well as `NewRecord` initialization in `ui.Browser`, which previously set default values (like `IsActive: true`, default `Currency` and `TaxTreatment`). Since `view.Screen` is fully declarative and does not deal with initialization defaults (the renderer is expected to manage this, or it must be specified declaratively in another way that is not currently requested by the plan), these forms logic were omitted.
+- Updated `README.md` and `AGENTS.md` to completely remove mentions of `web/` demo, as it was permanently deleted in Stage 3.
