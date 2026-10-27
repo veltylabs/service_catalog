@@ -30,7 +30,7 @@ func Load(m *servicecatalog.Module, tenantID string) (Data, error) {
 			}
 		}
 		if !found {
-			return data, fmt.Err("seed: canonical specialty not found", prefix)
+			return data, fmt.Err("seed: missing canonical specialty", prefix)
 		}
 
 		spec, err := m.UpsertSpecialty(servicecatalog.Specialty{
@@ -70,7 +70,7 @@ func Load(m *servicecatalog.Module, tenantID string) (Data, error) {
 			}
 		}
 		if !found {
-			return data, fmt.Err("seed: specialty id not found", specDef.prefix)
+			return data, fmt.Err("seed: unresolved specialty", specDef.prefix)
 		}
 
 		createdItem, err := m.CreateService(servicecatalog.Service{

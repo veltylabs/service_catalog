@@ -63,7 +63,7 @@ func (m *Module) MigrateSpecialtiesAndServices(tenantId string) (MigrationReport
 			}
 			created, err := m.UpsertSpecialty(spec)
 			if err != nil {
-				return report, fmt.Err("failed to seed specialty %s: %w", cs.Prefix, err)
+				return report, fmt.Err("migration: seed specialty", cs.Prefix, err)
 			}
 			prefixToID = append(prefixToID, fmt.KeyValue{Key: cs.Prefix, Value: created.Id})
 		} else {
@@ -91,7 +91,7 @@ func (m *Module) MigrateSpecialtiesAndServices(tenantId string) (MigrationReport
 		item.SpecialtyId = specID
 		_, err := m.UpdateService(item)
 		if err != nil {
-			return report, fmt.Err("failed to update item %s: %w", item.Id, err)
+			return report, fmt.Err("migration: update service", item.Id, err)
 		}
 		report.MigratedCount++
 	}
