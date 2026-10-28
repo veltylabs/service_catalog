@@ -27,5 +27,5 @@ require (
 	webtyp.com/css v0.4.31 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/font v0.0.6 // indirect
-	webtyp.com/widget v0.6.44 // indirect
+	webtyp.com/widget v0.6.45 // indirect
 )
