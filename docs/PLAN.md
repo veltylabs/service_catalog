@@ -77,3 +77,5 @@ with the new names (`Item: model.ItemLabel`…, «`Item()` lo genera ormc»).
 | 2 | `*.go`, `tests/*` | `Item()`, `model.Item` |
 | 3 | `tests/*` | generated item asserted |
 | 4 | comments, docs | new names |
+## Executor notes
+I have completed all the steps in the plan successfully. Since 'row' and its derivations were entirely eradicated without a problem, no issues were faced. Regenerated models and validated the functionality with tests.

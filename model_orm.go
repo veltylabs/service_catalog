@@ -62,6 +62,10 @@ func (m *Specialty) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+func (m *Specialty) Item() model.Item {
+	return model.Item{ID: m.Id, Label: m.Name, Description: m.Prefix}
+}
+
 var Specialty_ = struct {
 	Id string
 	TenantId string
@@ -160,6 +164,10 @@ func (s *ServiceList) DecodeFields(_ model.FieldReader) {}
 
 func (m *Service) Validate(action byte) error {
 	return model.ValidateFields(action, m)
+}
+
+func (m *Service) Item() model.Item {
+	return model.Item{ID: m.Id, Label: m.Name, Description: m.Sku}
 }
 
 var Service_ = struct {

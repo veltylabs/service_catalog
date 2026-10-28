@@ -27,7 +27,7 @@ var SpecialtyModel = model.Definition{
 	Fields: model.Fields{
 		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}, OmitEmpty: true},
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
-		{Name: "prefix", Type: input.Text(), Label: "Reference code", Help: "Two letters every service code (SKU) of this specialty starts with, e.g. MD for MD001.", NotNull: true, Row: model.RowDetail,
+		{Name: "prefix", Type: input.Text(), Label: "Reference code", Help: "Two letters every service code (SKU) of this specialty starts with, e.g. MD for MD001.", NotNull: true, Item: model.ItemDescription,
 			Permitted: model.Permitted{Letters: true, Minimum: 2, Maximum: 2}},
 		// input.Text()'s own baseline Extra ('.', ',', '(', ')') no incluye
 		// '+' — "Dental (Odontología + Ortodoncia)" lo necesita, así que
@@ -35,7 +35,7 @@ var SpecialtyModel = model.Definition{
 		// del Kind (Field.Validate: un whitelist positivo propio reemplaza
 		// el floor de Text, no lo suma). Tilde cubre las vocales acentuadas
 		// sin listarlas una a una.
-		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Row: model.RowTitle,
+		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Item: model.ItemLabel,
 			Permitted: model.Permitted{Letters: true, Tilde: true, Spaces: true, Extra: []rune{'+', '(', ')'}, Minimum: 1, Maximum: 100}},
 		{Name: "description", Type: input.Textarea(), Label: "Description", OmitEmpty: true},
 		{Name: "position", Type: model.Int(), OmitEmpty: true},
@@ -56,8 +56,8 @@ var ServiceModel = model.Definition{
 		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}, OmitEmpty: true},
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
 		{Name: "specialty_id", Type: input.Select(), Label: "Specialty", Ref: &SpecialtyModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
-		{Name: "sku", Type: input.Text(), Label: "SKU", NotNull: true, Row: model.RowDetail, Permitted: model.Permitted{Letters: true, Numbers: true, Extra: []rune{'-'}, Minimum: 1, Maximum: 50}},
-		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Row: model.RowTitle, Permitted: model.Permitted{Minimum: 1, Maximum: 255}},
+		{Name: "sku", Type: input.Text(), Label: "SKU", NotNull: true, Item: model.ItemDescription, Permitted: model.Permitted{Letters: true, Numbers: true, Extra: []rune{'-'}, Minimum: 1, Maximum: 50}},
+		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Item: model.ItemLabel, Permitted: model.Permitted{Minimum: 1, Maximum: 255}},
 		{Name: "description", Type: input.Textarea(), Label: "Description", Help: "Public information: patients read it when booking. Say what the service includes, how long it takes or how to prepare.", OmitEmpty: true},
 		{Name: "tax_treatment", Type: input.Select(), Label: "Tax treatment", Help: "Exempt: a health service without IVA (consultations and most exams). Taxed: it carries 19% IVA.", NotNull: true},
 		{Name: "price", Type: input.Decimal(), Label: "Price", NotNull: true},

@@ -12,13 +12,13 @@ require (
 	webtyp.com/input v0.0.21
 	webtyp.com/json v0.5.30
 	webtyp.com/lang v0.1.10
-	webtyp.com/model v0.2.7
+	webtyp.com/model v0.2.9
 	webtyp.com/orm v0.12.10
 	webtyp.com/router v0.4.9
 	webtyp.com/storage v0.1.6
 	webtyp.com/svg v0.3.30
 	webtyp.com/time v0.6.2
-	webtyp.com/view v0.6.47
+	webtyp.com/view v0.6.48
 )
 
 require (
