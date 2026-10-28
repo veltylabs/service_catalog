@@ -31,9 +31,6 @@ func Screens(caller router.Caller) []view.Screen {
 				Icon:       string(IconServices),
 				Permission: "service",
 				Presenter:  servicecatalog.NewView(caller, view.WithDescription(descServices)),
-				Lookups: []view.Lookup{
-					{Field: "specialty_id", Source: servicecatalog.NewSpecialtyView(caller)},
-				},
 			},
 			{
 				ID:         ID + ".specialties",

@@ -6,12 +6,13 @@ import (
 	"testing"
 
 	"github.com/veltylabs/service_catalog/ui"
+	"webtyp.com/view"
 )
 
 // Cada pantalla del catálogo se explica sola: el grupo y sus dos hijos
 // validan contra view.Screen y tienen descripciones no vacías.
 func TestBrowser_EveryScreenIsDescribed(t *testing.T) {
-	screens := ui.Screens(&mockCaller{})
+	screens := ui.Screens(view.NewRecords().Caller(&mockCaller{}))
 	if len(screens) != 1 {
 		t.Fatalf("expected 1 root group screen, got %d", len(screens))
 	}

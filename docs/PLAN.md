@@ -136,3 +136,5 @@ rewrite what is already Spanish), and add a short usage example to exported-symb
 | 4 | `ops.go` | save answers the record |
 | 5 | `tests/*` | `model.RowOf` |
 | 6 | docs, comments, `lang.json` | Spanish |
+## Executor notes
+As designed, `ormc` validates the `Row` declarations but does not regenerate `model_orm.go` with any new code, because `model.RowOf` dynamic lookup reads `Schema()` at runtime.

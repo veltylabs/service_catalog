@@ -13,7 +13,9 @@ import (
 )
 
 func TestView_ScreensStructure(t *testing.T) {
-	mock := &mockCaller{}
+	callerMock := &mockCaller{}
+	mock := view.NewRecords().Caller(callerMock)
+
 	screens := ui.Screens(mock)
 	if len(screens) != 1 {
 		t.Fatalf("expected 1 root screen, got %d", len(screens))
@@ -40,7 +42,7 @@ func TestView_ScreensStructure(t *testing.T) {
 }
 
 func TestView_LoadList(t *testing.T) {
-	mock := &mockCaller{
+	callerMock := &mockCaller{
 		onCall: func(op string, args model.Encodable, into model.Decodable) error {
 			if op == servicecatalog.ModelName+"."+servicecatalog.OpListServices {
 				list := servicecatalog.ServiceList{
@@ -57,13 +59,15 @@ func TestView_LoadList(t *testing.T) {
 		},
 	}
 
+	mock := view.NewRecords().Caller(callerMock)
+
 	screens := ui.Screens(mock)
 	pres := screens[0].Children[0].Presenter
 
 	pres.Reload(nil)
 
-	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpListServices {
-		t.Errorf("expected last op %q, got %q", servicecatalog.ModelName+"."+servicecatalog.OpListServices, mock.lastOp)
+	if callerMock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpListServices {
+		t.Errorf("expected last op %q, got %q", servicecatalog.ModelName+"."+servicecatalog.OpListServices, callerMock.lastOp)
 	}
 
 	items := pres.Items()
@@ -82,7 +86,7 @@ func TestView_SaveAndDelete(t *testing.T) {
 		Price:       100, Currency: "CLP", IsActive: true, UpdatedAt: 1,
 	}
 
-	mock := &mockCaller{
+	callerMock := &mockCaller{
 		onCall: func(op string, args model.Encodable, into model.Decodable) error {
 			switch op {
 			case servicecatalog.ModelName + "." + servicecatalog.OpListServices:
@@ -94,6 +98,8 @@ func TestView_SaveAndDelete(t *testing.T) {
 			return nil
 		},
 	}
+
+	mock := view.NewRecords().Caller(callerMock)
 
 	screens := ui.Screens(mock)
 	pres := screens[0].Children[0].Presenter
@@ -114,8 +120,8 @@ func TestView_SaveAndDelete(t *testing.T) {
 	if serr != nil {
 		t.Fatalf("Save: %v", serr)
 	}
-	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpUpsertService {
-		t.Errorf("expected last op %q after save, got %q", servicecatalog.ModelName+"."+servicecatalog.OpUpsertService, mock.lastOp)
+	if callerMock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpUpsertService {
+		t.Errorf("expected last op %q after save, got %q", servicecatalog.ModelName+"."+servicecatalog.OpUpsertService, callerMock.lastOp)
 	}
 
 	updater, ok := pres.(view.Updater)
@@ -127,8 +133,8 @@ func TestView_SaveAndDelete(t *testing.T) {
 	if uerr != nil {
 		t.Fatalf("Update: %v", uerr)
 	}
-	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpUpdateService {
-		t.Errorf("expected last op %q after update, got %q", servicecatalog.ModelName+"."+servicecatalog.OpUpdateService, mock.lastOp)
+	if callerMock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpUpdateService {
+		t.Errorf("expected last op %q after update, got %q", servicecatalog.ModelName+"."+servicecatalog.OpUpdateService, callerMock.lastOp)
 	}
 
 	deleter, ok := pres.(view.Deleter)
@@ -140,7 +146,7 @@ func TestView_SaveAndDelete(t *testing.T) {
 	if derr != nil {
 		t.Fatalf("Delete: %v", derr)
 	}
-	if mock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpDeleteService {
-		t.Errorf("expected last op %q after delete, got %q", servicecatalog.ModelName+"."+servicecatalog.OpDeleteService, mock.lastOp)
+	if callerMock.lastOp != servicecatalog.ModelName+"."+servicecatalog.OpDeleteService {
+		t.Errorf("expected last op %q after delete, got %q", servicecatalog.ModelName+"."+servicecatalog.OpDeleteService, callerMock.lastOp)
 	}
 }

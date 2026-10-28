@@ -8,6 +8,7 @@ import (
 	"webtyp.com/orm"
 	"webtyp.com/router/mock"
 	"webtyp.com/storage/mem"
+	"webtyp.com/view"
 )
 
 func TestCatalog(t *testing.T) {
@@ -472,12 +473,12 @@ func TestModule_MountOperationsAndView(t *testing.T) {
 	}
 
 	caller := &mock.Caller{}
-	pres := servicecatalog.NewView(caller)
+	pres := servicecatalog.NewView(view.NewRecords().Caller(caller))
 	if pres.Title() == "" {
 		t.Error("expected a non-empty view title")
 	}
 
-	specPres := servicecatalog.NewSpecialtyView(caller)
+	specPres := servicecatalog.NewSpecialtyView(view.NewRecords().Caller(caller))
 	if specPres.Title() == "" {
 		t.Error("expected a non-empty specialty view title")
 	}
