@@ -2,8 +2,6 @@
 PLAN: "feat!: list rows declared on the model fields (Row/Options); Item() removed"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
-SESSION: 8662610809364488455
 ---
 
 > Read AGENTS.md at the repo root before any change.
@@ -86,7 +84,9 @@ For each one, in the `model.Definition` of that type (`<Type>Model` in `model.go
   mark the field it is computed from and list each such case in the PR.
 
 Then run `ormc` (it rejects an invalid row: two `RowTitle`, details without a title, `Ref` with `Options`). Never
-edit `model_orm.go` by hand.
+edit `model_orm.go` by hand. Note: `ormc` only validates rows at generation time via `model.ValidateRow` — it does
+NOT generate code for `Row` into `model_orm.go`. `model.RowOf` evaluates `Schema()` dynamically at runtime. If `ormc .`
+exits with 0, that is expected and complete. Do not expect `model_orm.go` to contain `Row` references.
 
 ## Stage 2 — delete the `Item()` methods (`view.go`)
 
