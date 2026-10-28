@@ -5,7 +5,7 @@ REVIEWER: none
 STATUS: review
 SESSION: 8662610809364488455
 PR: https://github.com/veltylabs/service_catalog/pull/18
-REVIEWED_COMMIT: 918fa5bc29d1597422f4e17aa1ff2d296f4de0c9
+REVIEWED_COMMIT: 31cb1bf773b2f27da33ddd04786c2267698c3706
 ---
 
 > Read AGENTS.md at the repo root before any change.
