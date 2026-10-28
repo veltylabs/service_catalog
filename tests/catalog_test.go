@@ -24,7 +24,7 @@ func TestCatalog(t *testing.T) {
 
 	tenantID := "tenant-1"
 
-	// Create specialty first
+	// Crear especialidad primero
 	spec, err := module.UpsertSpecialty(servicecatalog.Specialty{
 		TenantId: tenantID,
 		Prefix: "md",
@@ -34,7 +34,7 @@ func TestCatalog(t *testing.T) {
 		t.Fatalf("failed to create specialty: %v", err)
 	}
 
-	// Test CreateService
+	// Probar CreateService
 	item := servicecatalog.Service{
 		TenantId:    tenantID,
 		SpecialtyId: spec.Id,

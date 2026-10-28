@@ -70,8 +70,28 @@ func TestView_LoadList(t *testing.T) {
 	if len(items) != 2 {
 		t.Fatalf("expected 2 items, got %d", len(items))
 	}
-	if items[0].Label != "Service One" {
-		t.Errorf("expected item 0 label 'Service One', got %q", items[0].Label)
+	if model.RowOf(&items[0]).Title != "Service One" {
+		t.Errorf("expected item 0 label 'Service One', got %q", model.RowOf(&items[0]).Title)
+	}
+}
+
+func TestRowsDeclaredOnFields(t *testing.T) {
+	spec := servicecatalog.Specialty{Id: "1", Name: "Spec Name", Prefix: "SN"}
+	specRow := model.RowOf(&spec)
+	if specRow.Title != "Spec Name" {
+		t.Errorf("expected specialty title 'Spec Name', got %q", specRow.Title)
+	}
+	if specRow.Detail != "SN" {
+		t.Errorf("expected specialty detail 'SN', got %q", specRow.Detail)
+	}
+
+	svc := servicecatalog.Service{Id: "2", Name: "Svc Name", Sku: "SKU-1"}
+	svcRow := model.RowOf(&svc)
+	if svcRow.Title != "Svc Name" {
+		t.Errorf("expected service title 'Svc Name', got %q", svcRow.Title)
+	}
+	if svcRow.Detail != "SKU-1" {
+		t.Errorf("expected service detail 'SKU-1', got %q", svcRow.Detail)
 	}
 }
 

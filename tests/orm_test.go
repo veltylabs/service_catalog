@@ -84,7 +84,7 @@ func TestValidateConstraints(t *testing.T) {
 		t.Error("expected empty name to be rejected")
 	}
 
-	// For invalid type "X", we check via the service layer validation!
+	// Para tipo inválido "X", revisamos vía la validación de la capa de servicio
 	db := orm.New(mem.New())
 	_, _ = servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
 
@@ -97,7 +97,7 @@ func TestFormInputsGeneration(t *testing.T) {
 		t.Fatalf("failed to create form: %v", err)
 	}
 
-	// We expect the form to contain editable input widgets for user-editable fields,
+	// Esperamos que el formulario contenga widgets de entrada editables para campos editables por el usuario,
 	// and NOT for machine-managed fields (id, tenant_id, updated_at).
 	// specialty_id is an input.Select() field, so editable form input fields are:
 	editableFields := []string{"specialty_id", "sku", "name", "description", "tax_treatment", "price", "currency", "is_active"}

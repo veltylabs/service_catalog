@@ -39,7 +39,7 @@ func TestOperations(t *testing.T) {
 
 	tenantID := "tenant-1"
 
-	// 0. Upsert Specialty via OP
+	// 0. Crear especialidad vía OP
 	spec := servicecatalog.Specialty{
 		TenantId: tenantID,
 		Prefix: "md",

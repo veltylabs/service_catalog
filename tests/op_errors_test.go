@@ -82,7 +82,7 @@ func TestOpErrors_SayWhy(t *testing.T) {
 	})
 }
 
-func TestItemCatalog_SaveWithoutSpecialtyIsRejected(t *testing.T) {
+func TestCatalog_SaveWithoutSpecialtyIsRejected(t *testing.T) {
 	module, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
