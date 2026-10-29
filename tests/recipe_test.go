@@ -12,7 +12,7 @@ import (
 // recipeService builds a module with one service ("Limpieza dental") in tenant-1 and returns both.
 func recipeService(t *testing.T) (*servicecatalog.Module, servicecatalog.Service) {
 	t.Helper()
-	m, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{IDs: &MockIDGen{}})
+	m, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -3,6 +3,7 @@ package ui
 import (
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/lang"
+	"webtyp.com/model"
 	"webtyp.com/router"
 	"webtyp.com/view"
 )
@@ -29,14 +30,14 @@ func Screens(caller router.Caller) []view.Screen {
 				ID:         ID + ".services",
 				Label:      "Servicios",
 				Icon:       string(IconServices),
-				Permission: "service",
+				Permission: model.ResourceOf(&servicecatalog.ServiceModel),
 				Presenter:  servicecatalog.NewView(caller, view.WithDescription(descServices)),
 			},
 			{
 				ID:         ID + ".specialties",
 				Label:      "Especialidades",
 				Icon:       string(IconSpecialties),
-				Permission: "specialty",
+				Permission: model.ResourceOf(&servicecatalog.SpecialtyModel),
 				Presenter:  servicecatalog.NewSpecialtyView(caller, view.WithDescription(descSpecialties)),
 			},
 		},

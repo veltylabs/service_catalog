@@ -2,8 +2,10 @@
 PLAN: "refactor: the tenant comes from the server (Deps.TenantID), never from the request; permissions named by the tables (model.ResourceOf)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 11156536684367955011
+PR: https://github.com/veltylabs/service_catalog/pull/22
+REVIEWED_COMMIT: 5e5722da103b53e83ad120929432b41b022ede9f
 ---
 
 > Read AGENTS.md at the repo root before any change.
@@ -134,3 +136,7 @@ GOPRIVATE=webtyp.com/*,github.com/veltylabs/* GOFLAGS=-mod=mod gotest
 | 4 | `ops.go`, `recipe.go`, `ui/browser.go` | both greps empty |
 | 5 | `tests/*` | suite green |
 | 6 | `web/`, `README.md` | text present |
+
+## Executor notes
+
+All stages implemented successfully. Note that tests tests/op_errors_test.go, tests/ops_test.go, and tests/tenant_test.go were adjusted for the new TenantID in payload args behavior.

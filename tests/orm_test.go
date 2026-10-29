@@ -13,17 +13,17 @@ import (
 
 func TestEncodeDecodeRoundtrip(t *testing.T) {
 	item := servicecatalog.Service{
-		Id:          "item-123",
-		TenantId:    "tenant-1",
-		SpecialtyId: "spec-123",
-		Sku:         "SKU-1",
-		Name:        "Name 1",
-		Description: "Desc 1",
-		Price:       150.0,
-		Currency:    "CLP",
-		IsActive:    true,
+		Id:           "item-123",
+		TenantId:     "tenant-1",
+		SpecialtyId:  "spec-123",
+		Sku:          "SKU-1",
+		Name:         "Name 1",
+		Description:  "Desc 1",
+		Price:        150.0,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
-		UpdatedAt:   123456,
+		UpdatedAt:    123456,
 	}
 
 	ctx := &mock.Context{}
@@ -62,16 +62,16 @@ func TestSchemaPointersLength(t *testing.T) {
 
 func TestValidateConstraints(t *testing.T) {
 	goodItem := servicecatalog.Service{
-		Id:          "item-1",
-		TenantId:    "tenant-1",
-		SpecialtyId: "spec-1",
-		Sku:         "SKU-1",
-		Name:        "Good Item",
-		Price:       100.0,
-		Currency:    "CLP",
-		IsActive:    true,
+		Id:           "item-1",
+		TenantId:     "tenant-1",
+		SpecialtyId:  "spec-1",
+		Sku:          "SKU-1",
+		Name:         "Good Item",
+		Price:        100.0,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
-		UpdatedAt:   12345,
+		UpdatedAt:    12345,
 	}
 
 	if err := goodItem.Validate(model.ActionCreate); err != nil {
@@ -86,7 +86,7 @@ func TestValidateConstraints(t *testing.T) {
 
 	// For invalid type "X", we check via the service layer validation!
 	db := orm.New(mem.New())
-	_, _ = servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	_, _ = servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 
 }
 
@@ -120,7 +120,7 @@ func TestErrorAndModelName(t *testing.T) {
 
 	// Cover Module.ModelName
 	db := orm.New(mem.New())
-	module, _ := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, _ := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if module.ModelName() != servicecatalog.ModelName {
 		t.Errorf("expected ModelName %q, got %q", servicecatalog.ModelName, module.ModelName())
 	}

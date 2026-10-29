@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	servicecatalog "github.com/veltylabs/service_catalog"
+	"strings"
 	"webtyp.com/json"
 	"webtyp.com/model"
 	"webtyp.com/orm"
 	"webtyp.com/router/mock"
 	"webtyp.com/storage/mem"
-	"strings"
 )
 
 // Every refused operation says why: over HTTP (rpc) the body is the only thing a caller sees, and
@@ -17,7 +17,7 @@ import (
 // silent 400).
 func opRouter(t *testing.T) *mock.Router {
 	t.Helper()
-	module, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,13 +78,13 @@ func TestOpErrors_SayWhy(t *testing.T) {
 		wantRefused(t, invoke(r, servicecatalog.OpUpsertSpecialty, encode(t, again)), 409, servicecatalog.ErrSpecialtyPrefixExists.Error())
 	})
 	t.Run("not found", func(t *testing.T) {
-		ctx := invoke(r, servicecatalog.OpGetSpecialty, encode(t, &servicecatalog.GetSpecialtyArgs{TenantId: "t1", Id: "nope"}))
+		ctx := invoke(r, servicecatalog.OpGetSpecialty, encode(t, &servicecatalog.GetSpecialtyArgs{Id: "nope"}))
 		wantRefused(t, ctx, 404, servicecatalog.ErrSpecialtyNotFound.Error())
 	})
 }
 
 func TestItemCatalog_SaveWithoutSpecialtyIsRejected(t *testing.T) {
-	module, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}
