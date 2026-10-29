@@ -2,6 +2,7 @@ package tests
 
 import (
 	"testing"
+	"webtyp.com/model"
 
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/orm"
@@ -71,8 +72,8 @@ func TestServiceRecipe_Rules(t *testing.T) {
 
 	if _, err := m.UpsertServiceSupply(servicecatalog.ServiceSupply{TenantId: "tenant-1", ServiceId: svc.Id, ItemId: "gauze", Quantity: 0}); err == nil {
 		t.Error("a zero quantity must be refused")
-	} else if _, ok := err.(servicecatalog.ValidationError); !ok {
-		t.Errorf("zero quantity (the field is required): got %T %v, want a ValidationError", err, err)
+	} else if model.FieldOf(err) == "" || model.KindOf(err) != model.ErrorInvalid {
+		t.Errorf("zero quantity (the field is required): got %T %v, want an invalid kind with a field", err, err)
 	}
 
 	line.Quantity = 3

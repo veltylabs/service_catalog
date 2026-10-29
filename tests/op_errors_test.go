@@ -9,6 +9,7 @@ import (
 	"webtyp.com/orm"
 	"webtyp.com/router/mock"
 	"webtyp.com/storage/mem"
+	"strings"
 )
 
 // Every refused operation says why: over HTTP (rpc) the body is the only thing a caller sees, and
@@ -45,7 +46,7 @@ func encode(t *testing.T, v model.Encodable) []byte {
 func wantRefused(t *testing.T, ctx *mock.Context, status int, body string) {
 	t.Helper()
 	got := string(ctx.ResponseBody())
-	if ctx.Status != status || got == "" || (body != "" && got != body) {
+	if ctx.Status != status || got == "" || (body != "" && !strings.Contains(got, body)) {
 		t.Fatalf("got %d %q, want %d %q (never an empty body)", ctx.Status, got, status, body)
 	}
 }

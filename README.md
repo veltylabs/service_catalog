@@ -77,7 +77,7 @@ Este módulo contiene su propio componente UI (`ui/`) y datos semilla (`seed/`).
 |------|---------|
 | `model.go` | Estructuras de datos y esquemas |
 | `module.go` | `Deps`, `New`, los métodos de dominio y los lectores (`ServiceExists`, `ServiceCard`) |
-| `errors.go` | Constantes de error, `statusOf`, `writeError` |
+| `errors.go` | Constantes de error (los errores salen por `rpc.WriteError`: 400/404/409 con el texto y el campo que falló; un 500 no muestra el detalle) |
 | `ops.go` | Nombres de operaciones, las formas en red de la vista, `MountOperations` y los manejadores |
 | `recipe.go` | La receta de insumos de un servicio y su lector `ServiceRecipe` |
 | `migration.go` | Migración de prefijo SKU a especialidad |

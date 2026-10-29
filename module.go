@@ -121,7 +121,7 @@ func (m *Module) UpsertSpecialty(spec Specialty) (Specialty, error) {
 	spec.UpdatedAt = time.NowNano()
 
 	if err := spec.Validate(action); err != nil {
-		return Specialty{}, ValidationError{Err: err}
+		return Specialty{}, err
 	}
 
 	// Validar la unicidad del prefijo por inquilino
@@ -130,7 +130,7 @@ func (m *Module) UpsertSpecialty(spec Specialty) (Specialty, error) {
 		if existingPrefix.Id != spec.Id {
 			return Specialty{}, ErrSpecialtyPrefixExists
 		}
-	} else if e, ok := err.(domainError); !ok || e != ErrSpecialtyNotFound {
+	} else if err != ErrSpecialtyNotFound && !orm.IsNotFound(err) {
 		return Specialty{}, err
 	}
 
@@ -274,7 +274,7 @@ func (m *Module) CreateService(item Service) (Service, error) {
 	item.UpdatedAt = time.NowNano()
 
 	if err := item.Validate(model.ActionCreate); err != nil {
-		return Service{}, ValidationError{Err: err}
+		return Service{}, err
 	}
 
 	validCurrency := false
@@ -289,7 +289,7 @@ func (m *Module) CreateService(item Service) (Service, error) {
 	}
 
 	if item.TaxTreatment != TaxTaxed && item.TaxTreatment != TaxExempt {
-		return Service{}, ValidationError{Err: fmt.Err("invalid tax treatment")}
+		return Service{}, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
 	}
 
 	// Validar la unicidad del SKU por inquilino
@@ -298,7 +298,7 @@ func (m *Module) CreateService(item Service) (Service, error) {
 		if existing.Id != "" {
 			return Service{}, ErrAlreadyExists
 		}
-	} else if e, ok := err.(domainError); !ok || e != ErrNotFound {
+	} else if err != ErrNotFound && !orm.IsNotFound(err) {
 		return Service{}, err
 	}
 
@@ -314,7 +314,7 @@ func (m *Module) CreateService(item Service) (Service, error) {
 // Ejemplo: svc, err := cat.UpdateService(existingSvc)
 func (m *Module) UpdateService(item Service) (Service, error) {
 	if err := item.Validate(model.ActionUpdate); err != nil {
-		return Service{}, ValidationError{Err: err}
+		return Service{}, err
 	}
 
 	validCurrency := false
@@ -329,7 +329,7 @@ func (m *Module) UpdateService(item Service) (Service, error) {
 	}
 
 	if item.TaxTreatment != TaxTaxed && item.TaxTreatment != TaxExempt {
-		return Service{}, ValidationError{Err: fmt.Err("invalid tax treatment")}
+		return Service{}, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
 	}
 
 	// Verificar que el ítem existe y pertenece al inquilino
@@ -393,7 +393,7 @@ func (m *Module) DeleteService(tenantId, id string) error {
 func (m *Module) ServiceExists(tenantId, serviceId string) (bool, error) {
 	item, err := m.GetService(tenantId, serviceId)
 	if err != nil {
-		if e, ok := err.(domainError); ok && e == ErrNotFound {
+		if err == ErrNotFound || orm.IsNotFound(err) {
 			return false, nil
 		}
 		return false, err
@@ -461,7 +461,7 @@ func (m *Module) UpsertServiceAgreement(a ServiceAgreement) (ServiceAgreement, e
 	a.UpdatedAt = time.NowNano()
 
 	if err := a.Validate(action); err != nil {
-		return ServiceAgreement{}, ValidationError{Err: err}
+		return ServiceAgreement{}, err
 	}
 
 	if action == model.ActionCreate {

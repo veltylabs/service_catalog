@@ -26,6 +26,9 @@ require (
 	webtyp.com/color v0.1.3 // indirect
 	webtyp.com/css v0.4.31 // indirect
 	webtyp.com/escape v0.1.0 // indirect
+	webtyp.com/fetch v0.1.29 // indirect
+	webtyp.com/filepath v0.1.0 // indirect
 	webtyp.com/font v0.0.6 // indirect
+	webtyp.com/rpc v0.2.7 // indirect
 	webtyp.com/widget v0.6.45 // indirect
 )

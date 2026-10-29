@@ -99,3 +99,7 @@ GOPRIVATE=webtyp.com/*,github.com/veltylabs/* GOFLAGS=-mod=mod gotest
 | 2 | `ops.go`, `recipe.go`, `module.go` | compiles |
 | 3 | `tests/*` | suite green |
 | 4 | `README.md`, docs | text present |
+
+## Executor notes
+
+- Dropped `TestOps_InternalErrorHidesDetail` completely (no faulty block left) as advised, because `webtyp/rpc` v0.2.7 already proves a 500 hides its detail in `TestWriteError_InternalHidesDetail`.

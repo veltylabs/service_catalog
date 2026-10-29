@@ -1,6 +1,7 @@
 package servicecatalog
 
 import (
+	"webtyp.com/orm"
 	"webtyp.com/fmt"
 )
 
@@ -54,7 +55,7 @@ func (m *Module) MigrateSpecialtiesAndServices(tenantId string) (MigrationReport
 		existing, err := m.GetSpecialtyByPrefix(tenantId, cs.Prefix)
 		if err == nil {
 			prefixToID = append(prefixToID, fmt.KeyValue{Key: cs.Prefix, Value: existing.Id})
-		} else if e, ok := err.(domainError); ok && e == ErrSpecialtyNotFound {
+		} else if err == ErrSpecialtyNotFound || orm.IsNotFound(err) {
 			spec := Specialty{
 				TenantId:    tenantId,
 				Prefix:      cs.Prefix,
