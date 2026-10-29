@@ -14,7 +14,7 @@ require (
 	webtyp.com/lang v0.1.10
 	webtyp.com/model v0.2.12
 	webtyp.com/orm v0.12.20
-	webtyp.com/router v0.4.15
+	webtyp.com/router v0.4.16
 	webtyp.com/rpc v0.2.10
 	webtyp.com/storage v0.1.8
 	webtyp.com/svg v0.3.30
