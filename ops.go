@@ -168,29 +168,29 @@ func (a *UpdateServiceArgs) DecodeFields(r model.FieldReader) {
 }
 
 func (m *Module) MountOperations(reg router.OperationRegistry) {
-	reg.Operation(OpListSpecialties, m.opListSpecialties).Requires("specialty", model.Read).Accepts(&ListSpecialtiesArgs{})
-	reg.Operation(OpGetSpecialty, m.opGetSpecialty).Requires("specialty", model.Read).Accepts(&GetSpecialtyArgs{})
-	reg.Operation(OpUpsertSpecialty, m.opUpsertSpecialty).Requires("specialty", model.Create|model.Update).Accepts(&UpsertSpecialtyArgs{})
-	reg.Operation(OpDeleteSpecialty, m.opDeleteSpecialty).Requires("specialty", model.Delete).Accepts(&DeleteSpecialtiesArgs{})
+	reg.Operation(OpListSpecialties, m.opListSpecialties).Requires(model.ResourceOf(&SpecialtyModel), model.Read).Accepts(&ListSpecialtiesArgs{})
+	reg.Operation(OpGetSpecialty, m.opGetSpecialty).Requires(model.ResourceOf(&SpecialtyModel), model.Read).Accepts(&GetSpecialtyArgs{})
+	reg.Operation(OpUpsertSpecialty, m.opUpsertSpecialty).Requires(model.ResourceOf(&SpecialtyModel), model.Create|model.Update).Accepts(&UpsertSpecialtyArgs{})
+	reg.Operation(OpDeleteSpecialty, m.opDeleteSpecialty).Requires(model.ResourceOf(&SpecialtyModel), model.Delete).Accepts(&DeleteSpecialtiesArgs{})
 
-	reg.Operation(OpListServices, m.opListServices).Requires("service", model.Read).Accepts(&ListServicesArgs{})
-	reg.Operation(OpGetService, m.opGetService).Requires("service", model.Read).Accepts(&GetServiceArgs{})
-	reg.Operation(OpFindServiceBySKU, m.opFindServiceBySKU).Requires("service", model.Read).Accepts(&FindServiceBySKUArgs{})
-	reg.Operation(OpCreateService, m.opCreateService).Requires("service", model.Create).Accepts(&Service{})
-	reg.Operation(OpUpdateService, m.opUpdateService).Requires("service", model.Update).Accepts(&UpdateServiceArgs{})
-	reg.Operation(OpUpsertService, m.opUpsertService).Requires("service", model.Create|model.Update).Accepts(&UpsertServiceArgs{})
-	reg.Operation(OpDeactivateService, m.opDeactivateService).Requires("service", model.Update).Accepts(&DeactivateServiceArgs{})
-	reg.Operation(OpDeleteService, m.opDeleteService).Requires("service", model.Delete).Accepts(&DeleteServicesArgs{})
+	reg.Operation(OpListServices, m.opListServices).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&ListServicesArgs{})
+	reg.Operation(OpGetService, m.opGetService).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&GetServiceArgs{})
+	reg.Operation(OpFindServiceBySKU, m.opFindServiceBySKU).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&FindServiceBySKUArgs{})
+	reg.Operation(OpCreateService, m.opCreateService).Requires(model.ResourceOf(&ServiceModel), model.Create).Accepts(&Service{})
+	reg.Operation(OpUpdateService, m.opUpdateService).Requires(model.ResourceOf(&ServiceModel), model.Update).Accepts(&UpdateServiceArgs{})
+	reg.Operation(OpUpsertService, m.opUpsertService).Requires(model.ResourceOf(&ServiceModel), model.Create|model.Update).Accepts(&UpsertServiceArgs{})
+	reg.Operation(OpDeactivateService, m.opDeactivateService).Requires(model.ResourceOf(&ServiceModel), model.Update).Accepts(&DeactivateServiceArgs{})
+	reg.Operation(OpDeleteService, m.opDeleteService).Requires(model.ResourceOf(&ServiceModel), model.Delete).Accepts(&DeleteServicesArgs{})
 
-	reg.Operation(OpListCurrencies, m.opListCurrencies).Requires("service", model.Read).Accepts(&ListCurrenciesArgs{})
+	reg.Operation(OpListCurrencies, m.opListCurrencies).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&ListCurrenciesArgs{})
 
-	reg.Operation(OpListAgreements, m.opListServiceAgreements).Requires("service_agreement", model.Read).Accepts(&ListAgreementsArgs{})
-	reg.Operation(OpUpsertAgreement, m.opUpsertServiceAgreement).Requires("service_agreement", model.Create|model.Update).Accepts(&ServiceAgreement{})
-	reg.Operation(OpDeleteAgreement, m.opDeleteServiceAgreement).Requires("service_agreement", model.Delete).Accepts(&DeleteAgreementArgs{})
+	reg.Operation(OpListAgreements, m.opListServiceAgreements).Requires(model.ResourceOf(&ServiceAgreementModel), model.Read).Accepts(&ListAgreementsArgs{})
+	reg.Operation(OpUpsertAgreement, m.opUpsertServiceAgreement).Requires(model.ResourceOf(&ServiceAgreementModel), model.Create|model.Update).Accepts(&ServiceAgreement{})
+	reg.Operation(OpDeleteAgreement, m.opDeleteServiceAgreement).Requires(model.ResourceOf(&ServiceAgreementModel), model.Delete).Accepts(&DeleteAgreementArgs{})
 
-	reg.Operation(OpListServiceSupplies, m.opListServiceSupplies).Requires(resServiceSupply, model.Read).Accepts(&ListServiceSuppliesArgs{})
-	reg.Operation(OpUpsertServiceSupply, m.opUpsertServiceSupply).Requires(resServiceSupply, model.Create|model.Update).Accepts(&ServiceSupply{})
-	reg.Operation(OpDeleteServiceSupply, m.opDeleteServiceSupply).Requires(resServiceSupply, model.Delete).Accepts(&DeleteServiceSupplyArgs{})
+	reg.Operation(OpListServiceSupplies, m.opListServiceSupplies).Requires(model.ResourceOf(&ServiceSupplyModel), model.Read).Accepts(&ListServiceSuppliesArgs{})
+	reg.Operation(OpUpsertServiceSupply, m.opUpsertServiceSupply).Requires(model.ResourceOf(&ServiceSupplyModel), model.Create|model.Update).Accepts(&ServiceSupply{})
+	reg.Operation(OpDeleteServiceSupply, m.opDeleteServiceSupply).Requires(model.ResourceOf(&ServiceSupplyModel), model.Delete).Accepts(&DeleteServiceSupplyArgs{})
 }
 
 var _ router.OperationModule = (*Module)(nil)
@@ -201,7 +201,7 @@ func (m *Module) opListSpecialties(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	list, err := m.ListSpecialties(args.TenantId)
+	list, err := m.ListSpecialties(m.tenantID)
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -221,7 +221,7 @@ func (m *Module) opGetSpecialty(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	spec, err := m.GetSpecialty(args.TenantId, args.Id)
+	spec, err := m.GetSpecialty(m.tenantID, args.Id)
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -243,6 +243,7 @@ func (m *Module) opUpsertSpecialty(ctx router.Context) {
 	}
 	var last Specialty
 	for _, spec := range args.Records {
+		spec.TenantId = m.tenantID
 		out, err := m.UpsertSpecialty(spec)
 		if err != nil {
 			rpc.WriteError(ctx, err)
@@ -266,7 +267,7 @@ func (m *Module) opDeleteSpecialty(ctx router.Context) {
 		return
 	}
 	for _, id := range args.Ids {
-		if err := m.DeleteSpecialty("", id); err != nil {
+		if err := m.DeleteSpecialty(m.tenantID, id); err != nil {
 			rpc.WriteError(ctx, err)
 			return
 		}
@@ -281,7 +282,7 @@ func (m *Module) opListServices(ctx router.Context) {
 		return
 	}
 	filter := ServiceFilter{SpecialtyId: args.SpecialtyId, ActiveOnly: args.ActiveOnly, Limit: args.Limit, Offset: args.Offset}
-	items, err := m.ListServices(args.TenantId, filter)
+	items, err := m.ListServices(m.tenantID, filter)
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -301,7 +302,7 @@ func (m *Module) opGetService(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	item, err := m.GetService(args.TenantId, args.Id)
+	item, err := m.GetService(m.tenantID, args.Id)
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -317,7 +318,7 @@ func (m *Module) opFindServiceBySKU(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	item, err := m.FindBySKU(args.TenantId, args.Sku)
+	item, err := m.FindBySKU(m.tenantID, args.Sku)
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -333,6 +334,7 @@ func (m *Module) opCreateService(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
+	item.TenantId = m.tenantID
 	created, err := m.CreateService(item)
 	if err != nil {
 		rpc.WriteError(ctx, err)
@@ -354,7 +356,7 @@ func (m *Module) opUpdateService(ctx router.Context) {
 		return
 	}
 	for _, id := range args.Ids {
-		existing, err := m.GetService("", id)
+		existing, err := m.GetService(m.tenantID, id)
 		if err != nil {
 			rpc.WriteError(ctx, err)
 			return
@@ -395,6 +397,7 @@ func (m *Module) opUpsertService(ctx router.Context) {
 	}
 	var last Service
 	for _, item := range args.Records {
+		item.TenantId = m.tenantID
 		var out Service
 		var err error
 		if item.Id == "" {
@@ -422,7 +425,7 @@ func (m *Module) opDeactivateService(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	if err := m.DeactivateService(args.TenantId, args.Id); err != nil {
+	if err := m.DeactivateService(m.tenantID, args.Id); err != nil {
 		rpc.WriteError(ctx, err)
 		return
 	}
@@ -440,7 +443,7 @@ func (m *Module) opDeleteService(ctx router.Context) {
 		return
 	}
 	for _, id := range args.Ids {
-		if err := m.DeleteService("", id); err != nil {
+		if err := m.DeleteService(m.tenantID, id); err != nil {
 			rpc.WriteError(ctx, err)
 			return
 		}
@@ -454,7 +457,7 @@ func (m *Module) opListServiceAgreements(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	items, err := m.ListServiceAgreements(args.TenantId, args.ServiceId)
+	items, err := m.ListServiceAgreements(m.tenantID, args.ServiceId)
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -474,6 +477,7 @@ func (m *Module) opUpsertServiceAgreement(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
+	a.TenantId = m.tenantID
 	out, err := m.UpsertServiceAgreement(a)
 	if err != nil {
 		rpc.WriteError(ctx, err)
@@ -490,7 +494,7 @@ func (m *Module) opDeleteServiceAgreement(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	if err := m.DeleteServiceAgreement(args.TenantId, args.Id); err != nil {
+	if err := m.DeleteServiceAgreement(m.tenantID, args.Id); err != nil {
 		rpc.WriteError(ctx, err)
 		return
 	}

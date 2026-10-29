@@ -15,7 +15,7 @@ func TestSeedLoad(t *testing.T) {
 	broker := &mock.Broker{}
 	idGen := &testIDGen{}
 
-	m, err := servicecatalog.New(db, servicecatalog.Deps{
+	m, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1",
 		IDs:       idGen,
 		Publisher: broker,
 	})

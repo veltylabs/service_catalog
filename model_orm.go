@@ -404,7 +404,6 @@ func (m *ServiceSupply) SchemaExt() []model.FieldExt {
 }
 
 type ListServiceSuppliesArgs struct {
-	TenantId string
 	ServiceId string
 }
 
@@ -412,17 +411,15 @@ func (m *ListServiceSuppliesArgs) ModelName() string { return "list_service_supp
 
 func (m *ListServiceSuppliesArgs) Schema() []model.Field { return ListServiceSuppliesArgsModel.Fields }
 
-func (m *ListServiceSuppliesArgs) Pointers() []any { return []any{&m.TenantId, &m.ServiceId} }
+func (m *ListServiceSuppliesArgs) Pointers() []any { return []any{&m.ServiceId} }
 
 func (m *ListServiceSuppliesArgs) IsNil() bool { return m == nil }
 
 func (m *ListServiceSuppliesArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("service_id", m.ServiceId)
 }
 
 func (m *ListServiceSuppliesArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("service_id"); ok { m.ServiceId = v }
 }
 
@@ -440,7 +437,6 @@ func (m *ListServiceSuppliesArgs) Validate(action byte) error {
 }
 
 type DeleteServiceSupplyArgs struct {
-	TenantId string
 	Id string
 }
 
@@ -448,17 +444,15 @@ func (m *DeleteServiceSupplyArgs) ModelName() string { return "delete_service_su
 
 func (m *DeleteServiceSupplyArgs) Schema() []model.Field { return DeleteServiceSupplyArgsModel.Fields }
 
-func (m *DeleteServiceSupplyArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
+func (m *DeleteServiceSupplyArgs) Pointers() []any { return []any{&m.Id} }
 
 func (m *DeleteServiceSupplyArgs) IsNil() bool { return m == nil }
 
 func (m *DeleteServiceSupplyArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("id", m.Id)
 }
 
 func (m *DeleteServiceSupplyArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("id"); ok { m.Id = v }
 }
 
@@ -518,7 +512,6 @@ func (m *ServiceFilter) Validate(action byte) error {
 }
 
 type ListServicesArgs struct {
-	TenantId string
 	SpecialtyId string
 	ActiveOnly bool
 	Limit int64
@@ -529,12 +522,11 @@ func (m *ListServicesArgs) ModelName() string { return "list_services_args" }
 
 func (m *ListServicesArgs) Schema() []model.Field { return ListServicesArgsModel.Fields }
 
-func (m *ListServicesArgs) Pointers() []any { return []any{&m.TenantId, &m.SpecialtyId, &m.ActiveOnly, &m.Limit, &m.Offset} }
+func (m *ListServicesArgs) Pointers() []any { return []any{&m.SpecialtyId, &m.ActiveOnly, &m.Limit, &m.Offset} }
 
 func (m *ListServicesArgs) IsNil() bool { return m == nil }
 
 func (m *ListServicesArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("specialty_id", m.SpecialtyId)
 	w.Bool("active_only", m.ActiveOnly)
 	w.Int("limit", m.Limit)
@@ -542,7 +534,6 @@ func (m *ListServicesArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *ListServicesArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("specialty_id"); ok { m.SpecialtyId = v }
 	if v, ok := r.Bool("active_only"); ok { m.ActiveOnly = v }
 	if v, ok := r.Int("limit"); ok { m.Limit = v }
@@ -563,7 +554,6 @@ func (m *ListServicesArgs) Validate(action byte) error {
 }
 
 type GetServiceArgs struct {
-	TenantId string
 	Id string
 }
 
@@ -571,17 +561,15 @@ func (m *GetServiceArgs) ModelName() string { return "get_item_args" }
 
 func (m *GetServiceArgs) Schema() []model.Field { return GetServiceArgsModel.Fields }
 
-func (m *GetServiceArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
+func (m *GetServiceArgs) Pointers() []any { return []any{&m.Id} }
 
 func (m *GetServiceArgs) IsNil() bool { return m == nil }
 
 func (m *GetServiceArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("id", m.Id)
 }
 
 func (m *GetServiceArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("id"); ok { m.Id = v }
 }
 
@@ -599,7 +587,6 @@ func (m *GetServiceArgs) Validate(action byte) error {
 }
 
 type FindServiceBySKUArgs struct {
-	TenantId string
 	Sku string
 }
 
@@ -607,17 +594,15 @@ func (m *FindServiceBySKUArgs) ModelName() string { return "find_by_sku_args" }
 
 func (m *FindServiceBySKUArgs) Schema() []model.Field { return FindServiceBySKUArgsModel.Fields }
 
-func (m *FindServiceBySKUArgs) Pointers() []any { return []any{&m.TenantId, &m.Sku} }
+func (m *FindServiceBySKUArgs) Pointers() []any { return []any{&m.Sku} }
 
 func (m *FindServiceBySKUArgs) IsNil() bool { return m == nil }
 
 func (m *FindServiceBySKUArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("sku", m.Sku)
 }
 
 func (m *FindServiceBySKUArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("sku"); ok { m.Sku = v }
 }
 
@@ -635,7 +620,6 @@ func (m *FindServiceBySKUArgs) Validate(action byte) error {
 }
 
 type DeactivateServiceArgs struct {
-	TenantId string
 	Id string
 }
 
@@ -643,17 +627,15 @@ func (m *DeactivateServiceArgs) ModelName() string { return "deactivate_item_arg
 
 func (m *DeactivateServiceArgs) Schema() []model.Field { return DeactivateServiceArgsModel.Fields }
 
-func (m *DeactivateServiceArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
+func (m *DeactivateServiceArgs) Pointers() []any { return []any{&m.Id} }
 
 func (m *DeactivateServiceArgs) IsNil() bool { return m == nil }
 
 func (m *DeactivateServiceArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("id", m.Id)
 }
 
 func (m *DeactivateServiceArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("id"); ok { m.Id = v }
 }
 
@@ -671,7 +653,6 @@ func (m *DeactivateServiceArgs) Validate(action byte) error {
 }
 
 type DeleteServiceArgs struct {
-	TenantId string
 	Id string
 }
 
@@ -679,17 +660,15 @@ func (m *DeleteServiceArgs) ModelName() string { return "delete_item_args" }
 
 func (m *DeleteServiceArgs) Schema() []model.Field { return DeleteServiceArgsModel.Fields }
 
-func (m *DeleteServiceArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
+func (m *DeleteServiceArgs) Pointers() []any { return []any{&m.Id} }
 
 func (m *DeleteServiceArgs) IsNil() bool { return m == nil }
 
 func (m *DeleteServiceArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("id", m.Id)
 }
 
 func (m *DeleteServiceArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("id"); ok { m.Id = v }
 }
 
@@ -707,7 +686,6 @@ func (m *DeleteServiceArgs) Validate(action byte) error {
 }
 
 type ListAgreementsArgs struct {
-	TenantId string
 	ServiceId string
 }
 
@@ -715,17 +693,15 @@ func (m *ListAgreementsArgs) ModelName() string { return "list_agreements_args" 
 
 func (m *ListAgreementsArgs) Schema() []model.Field { return ListAgreementsArgsModel.Fields }
 
-func (m *ListAgreementsArgs) Pointers() []any { return []any{&m.TenantId, &m.ServiceId} }
+func (m *ListAgreementsArgs) Pointers() []any { return []any{&m.ServiceId} }
 
 func (m *ListAgreementsArgs) IsNil() bool { return m == nil }
 
 func (m *ListAgreementsArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("service_id", m.ServiceId)
 }
 
 func (m *ListAgreementsArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("service_id"); ok { m.ServiceId = v }
 }
 
@@ -743,7 +719,6 @@ func (m *ListAgreementsArgs) Validate(action byte) error {
 }
 
 type DeleteAgreementArgs struct {
-	TenantId string
 	Id string
 }
 
@@ -751,17 +726,15 @@ func (m *DeleteAgreementArgs) ModelName() string { return "delete_agreement_args
 
 func (m *DeleteAgreementArgs) Schema() []model.Field { return DeleteAgreementArgsModel.Fields }
 
-func (m *DeleteAgreementArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
+func (m *DeleteAgreementArgs) Pointers() []any { return []any{&m.Id} }
 
 func (m *DeleteAgreementArgs) IsNil() bool { return m == nil }
 
 func (m *DeleteAgreementArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("id", m.Id)
 }
 
 func (m *DeleteAgreementArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("id"); ok { m.Id = v }
 }
 
@@ -812,23 +785,20 @@ func (m *CurrencyOption) Validate(action byte) error {
 }
 
 type ListCurrenciesArgs struct {
-	TenantId string
 }
 
 func (m *ListCurrenciesArgs) ModelName() string { return "list_currencies_args" }
 
 func (m *ListCurrenciesArgs) Schema() []model.Field { return ListCurrenciesArgsModel.Fields }
 
-func (m *ListCurrenciesArgs) Pointers() []any { return []any{&m.TenantId} }
+func (m *ListCurrenciesArgs) Pointers() []any { return []any{} }
 
 func (m *ListCurrenciesArgs) IsNil() bool { return m == nil }
 
 func (m *ListCurrenciesArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 }
 
 func (m *ListCurrenciesArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 }
 
 type ListCurrenciesArgsList []*ListCurrenciesArgs
@@ -845,23 +815,20 @@ func (m *ListCurrenciesArgs) Validate(action byte) error {
 }
 
 type ListSpecialtiesArgs struct {
-	TenantId string
 }
 
 func (m *ListSpecialtiesArgs) ModelName() string { return "list_specialties_args" }
 
 func (m *ListSpecialtiesArgs) Schema() []model.Field { return ListSpecialtiesArgsModel.Fields }
 
-func (m *ListSpecialtiesArgs) Pointers() []any { return []any{&m.TenantId} }
+func (m *ListSpecialtiesArgs) Pointers() []any { return []any{} }
 
 func (m *ListSpecialtiesArgs) IsNil() bool { return m == nil }
 
 func (m *ListSpecialtiesArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 }
 
 func (m *ListSpecialtiesArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 }
 
 type ListSpecialtiesArgsList []*ListSpecialtiesArgs
@@ -878,7 +845,6 @@ func (m *ListSpecialtiesArgs) Validate(action byte) error {
 }
 
 type GetSpecialtyArgs struct {
-	TenantId string
 	Id string
 }
 
@@ -886,17 +852,15 @@ func (m *GetSpecialtyArgs) ModelName() string { return "get_specialty_args" }
 
 func (m *GetSpecialtyArgs) Schema() []model.Field { return GetSpecialtyArgsModel.Fields }
 
-func (m *GetSpecialtyArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
+func (m *GetSpecialtyArgs) Pointers() []any { return []any{&m.Id} }
 
 func (m *GetSpecialtyArgs) IsNil() bool { return m == nil }
 
 func (m *GetSpecialtyArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("id", m.Id)
 }
 
 func (m *GetSpecialtyArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("id"); ok { m.Id = v }
 }
 
@@ -914,7 +878,6 @@ func (m *GetSpecialtyArgs) Validate(action byte) error {
 }
 
 type DeleteSpecialtyArgs struct {
-	TenantId string
 	Id string
 }
 
@@ -922,17 +885,15 @@ func (m *DeleteSpecialtyArgs) ModelName() string { return "delete_specialty_args
 
 func (m *DeleteSpecialtyArgs) Schema() []model.Field { return DeleteSpecialtyArgsModel.Fields }
 
-func (m *DeleteSpecialtyArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
+func (m *DeleteSpecialtyArgs) Pointers() []any { return []any{&m.Id} }
 
 func (m *DeleteSpecialtyArgs) IsNil() bool { return m == nil }
 
 func (m *DeleteSpecialtyArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
 	w.String("id", m.Id)
 }
 
 func (m *DeleteSpecialtyArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("id"); ok { m.Id = v }
 }
 

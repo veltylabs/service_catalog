@@ -4,6 +4,8 @@
 Catálogo de los **servicios** que ofrece una empresa y las **especialidades** que los clasifican. Diseñado para el ecosistema Velty.
 Los productos y suministros son otros módulos (`pharmacy_manager`, `supply_manager`).
 
+*Nota:* `Deps.TenantID` es obligatorio; las operaciones nunca leen el tenant de la petición; los permisos se nombran con `model.ResourceOf(&Tabla)`.
+
 ## Inicio Rápido
 
 ```go
@@ -18,13 +20,14 @@ db := orm.New(mem.New())
 idGenerator := &MyIDGenerator{} // implementa model.IDGenerator
 
 module, _ := servicecatalog.New(db, servicecatalog.Deps{
+	TenantID:   "my-tenant", // es obligatorio; las operaciones nunca leen el tenant de la petición
 	IDs:        idGenerator,
 	Currencies: []string{servicecatalog.CurrencyCLP}, // Si no se indica, el catálogo acepta solo CLP
 })
 
 // Crear especialidad
 specialty, _ := module.UpsertSpecialty(servicecatalog.Specialty{
-	TenantId: "my-tenant",
+	TenantId: "my-tenant", // A nivel de dominio se pasa el tenant (las operaciones lo sobreescriben)
 	Prefix:   "md",
 	Name:     "Medicina General",
 })

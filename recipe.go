@@ -15,7 +15,7 @@ const (
 	OpUpsertServiceSupply = "upsert_service_supply"
 	OpDeleteServiceSupply = "delete_service_supply"
 
-	resServiceSupply = "service_supply"
+
 )
 
 // ListServiceSupplies devuelve la receta de un servicio (o de todos los servicios si serviceId es ""), en orden de inserción.
@@ -134,7 +134,7 @@ func (m *Module) opListServiceSupplies(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	items, err := m.ListServiceSupplies(args.TenantId, args.ServiceId)
+	items, err := m.ListServiceSupplies(m.tenantID, args.ServiceId)
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -154,6 +154,7 @@ func (m *Module) opUpsertServiceSupply(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
+	s.TenantId = m.tenantID
 	out, err := m.UpsertServiceSupply(s)
 	if err != nil {
 		rpc.WriteError(ctx, err)
@@ -170,7 +171,7 @@ func (m *Module) opDeleteServiceSupply(ctx router.Context) {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	if err := m.DeleteServiceSupply(args.TenantId, args.Id); err != nil {
+	if err := m.DeleteServiceSupply(m.tenantID, args.Id); err != nil {
 		rpc.WriteError(ctx, err)
 		return
 	}

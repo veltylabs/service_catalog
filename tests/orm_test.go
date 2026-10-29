@@ -86,7 +86,7 @@ func TestValidateConstraints(t *testing.T) {
 
 	// For invalid type "X", we check via the service layer validation!
 	db := orm.New(mem.New())
-	_, _ = servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	_, _ = servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 
 }
 
@@ -120,7 +120,7 @@ func TestErrorAndModelName(t *testing.T) {
 
 	// Cover Module.ModelName
 	db := orm.New(mem.New())
-	module, _ := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, _ := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if module.ModelName() != servicecatalog.ModelName {
 		t.Errorf("expected ModelName %q, got %q", servicecatalog.ModelName, module.ModelName())
 	}

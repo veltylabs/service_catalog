@@ -98,7 +98,6 @@ var ServiceSupplyModel = model.Definition{
 var ListServiceSuppliesArgsModel = model.Definition{
 	Name: "list_service_supplies_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "service_id", Type: model.Text()},
 	},
 }
@@ -106,7 +105,6 @@ var ListServiceSuppliesArgsModel = model.Definition{
 var DeleteServiceSupplyArgsModel = model.Definition{
 	Name: "delete_service_supply_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "id", Type: model.Text()},
 	},
 }
@@ -124,7 +122,6 @@ var ServiceFilterModel = model.Definition{
 var ListServicesArgsModel = model.Definition{
 	Name: "list_services_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "specialty_id", Type: model.Text()},
 		{Name: "active_only", Type: model.Bool()},
 		{Name: "limit", Type: model.Int()},
@@ -135,7 +132,6 @@ var ListServicesArgsModel = model.Definition{
 var GetServiceArgsModel = model.Definition{
 	Name: "get_item_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "id", Type: model.Text()},
 	},
 }
@@ -143,7 +139,6 @@ var GetServiceArgsModel = model.Definition{
 var FindServiceBySKUArgsModel = model.Definition{
 	Name: "find_by_sku_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "sku", Type: model.Text()},
 	},
 }
@@ -151,7 +146,6 @@ var FindServiceBySKUArgsModel = model.Definition{
 var DeactivateServiceArgsModel = model.Definition{
 	Name: "deactivate_item_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "id", Type: model.Text()},
 	},
 }
@@ -159,7 +153,6 @@ var DeactivateServiceArgsModel = model.Definition{
 var DeleteServiceArgsModel = model.Definition{
 	Name: "delete_item_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "id", Type: model.Text()},
 	},
 }
@@ -167,7 +160,6 @@ var DeleteServiceArgsModel = model.Definition{
 var ListAgreementsArgsModel = model.Definition{
 	Name: "list_agreements_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "service_id", Type: model.Text()},
 	},
 }
@@ -175,7 +167,6 @@ var ListAgreementsArgsModel = model.Definition{
 var DeleteAgreementArgsModel = model.Definition{
 	Name: "delete_agreement_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "id", Type: model.Text()},
 	},
 }
@@ -190,21 +181,18 @@ var CurrencyOptionModel = model.Definition{
 var ListCurrenciesArgsModel = model.Definition{
 	Name: "list_currencies_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
-	},
+		},
 }
 
 var ListSpecialtiesArgsModel = model.Definition{
 	Name: "list_specialties_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
-	},
+		},
 }
 
 var GetSpecialtyArgsModel = model.Definition{
 	Name: "get_specialty_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "id", Type: model.Text()},
 	},
 }
@@ -212,7 +200,6 @@ var GetSpecialtyArgsModel = model.Definition{
 var DeleteSpecialtyArgsModel = model.Definition{
 	Name: "delete_specialty_args",
 	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
 		{Name: "id", Type: model.Text()},
 	},
 }

@@ -134,3 +134,7 @@ GOPRIVATE=webtyp.com/*,github.com/veltylabs/* GOFLAGS=-mod=mod gotest
 | 4 | `ops.go`, `recipe.go`, `ui/browser.go` | both greps empty |
 | 5 | `tests/*` | suite green |
 | 6 | `web/`, `README.md` | text present |
+
+## Executor notes
+
+All stages implemented successfully. Note that tests tests/op_errors_test.go, tests/ops_test.go, and tests/tenant_test.go were adjusted for the new TenantID in payload args behavior.

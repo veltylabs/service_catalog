@@ -13,7 +13,7 @@ import (
 
 func TestServiceCard_EmptyArgsNotFound(t *testing.T) {
 	db := orm.New(mem.New())
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func TestServiceCard_EmptyArgsNotFound(t *testing.T) {
 
 func TestServiceCard_UnknownOrOtherTenantNotFound(t *testing.T) {
 	db := orm.New(mem.New())
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func TestServiceCard_StorageErrorPropagates(t *testing.T) {
 	// Use mem.New() as the underlying storage, but wrap it in our errConn
 	underlying := mem.New()
 	db := orm.New(&errConn{Conn: underlying})
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestServiceCard_StorageErrorPropagates(t *testing.T) {
 
 func TestServiceCard_ReturnsNamePriceCurrencyActive(t *testing.T) {
 	db := orm.New(mem.New())
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}

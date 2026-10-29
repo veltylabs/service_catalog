@@ -26,10 +26,12 @@ const (
 type Deps struct {
 	IDs        model.IDGenerator // requerido — el módulo NUNCA construye un generador
 	Publisher  events.Publisher  // opcional — nil desactiva la publicación de eventos
+	TenantID   string // requerido — el tenant de esta instalación; las operaciones nunca lo leen de la petición
 	Currencies []string          // monedas que acepta el catálogo (ISO 4217, tres letras mayúsculas), la primera es la de los servicios nuevos; vacío = solo CurrencyCLP
 }
 
 type Module struct {
+	tenantID   string
 	db         *orm.DB
 	ids        model.IDGenerator
 	pub        events.Publisher
@@ -39,6 +41,9 @@ type Module struct {
 func New(db *orm.DB, deps Deps) (*Module, error) {
 	if deps.IDs == nil {
 		return nil, fmt.Err("service_catalog: Deps.IDs is required")
+	}
+	if deps.TenantID == "" {
+		return nil, fmt.Err("service_catalog: Deps.TenantID is required")
 	}
 
 	currencies := deps.Currencies
@@ -57,7 +62,7 @@ func New(db *orm.DB, deps Deps) (*Module, error) {
 		}
 	}
 
-	return &Module{db: db, ids: deps.IDs, pub: deps.Publisher, currencies: currencies}, nil
+	return &Module{tenantID: deps.TenantID, db: db, ids: deps.IDs, pub: deps.Publisher, currencies: currencies}, nil
 }
 
 // Métodos de Especialidad

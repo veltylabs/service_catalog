@@ -16,6 +16,7 @@ func TestCatalog(t *testing.T) {
 
 	pub := &MockPublisher{}
 	module, err := servicecatalog.New(db, servicecatalog.Deps{
+		TenantID: "tenant-1",
 		IDs:       &MockIDGen{},
 		Publisher: pub,
 	})
@@ -205,7 +206,7 @@ func TestCatalog(t *testing.T) {
 
 func TestSpecialtyUniquenessAndDefaults(t *testing.T) {
 	db := orm.New(mem.New())
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,7 +255,7 @@ func TestSpecialtyUniquenessAndDefaults(t *testing.T) {
 
 func TestMigration(t *testing.T) {
 	db := orm.New(mem.New())
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -336,6 +337,7 @@ func TestServiceAgreements(t *testing.T) {
 
 	pub := &MockPublisher{}
 	module, err := servicecatalog.New(db, servicecatalog.Deps{
+		TenantID: "tenant-1",
 		IDs:       &MockIDGen{},
 		Publisher: pub,
 	})
@@ -450,7 +452,7 @@ func TestServiceAgreements(t *testing.T) {
 func TestModule_MountOperationsAndView(t *testing.T) {
 	db := orm.New(mem.New())
 	pub := &MockPublisher{}
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}, Publisher: pub})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}, Publisher: pub})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -486,7 +488,7 @@ func TestModule_MountOperationsAndView(t *testing.T) {
 
 func TestTaxTreatmentValidation(t *testing.T) {
 	db := orm.New(mem.New())
-	module, err := servicecatalog.New(db, servicecatalog.Deps{IDs: &MockIDGen{}})
+	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
 	if err != nil {
 		t.Fatal(err)
 	}

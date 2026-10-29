@@ -16,6 +16,7 @@ func TestOperations(t *testing.T) {
 	db := orm.New(mem.New())
 	pub := &MockPublisher{}
 	module, err := servicecatalog.New(db, servicecatalog.Deps{
+		TenantID: "tenant-1",
 		IDs:       &MockIDGen{},
 		Publisher: pub,
 	})
@@ -68,9 +69,7 @@ func TestOperations(t *testing.T) {
 	}
 
 	// List Specialties via OP
-	listSpecArgs := servicecatalog.ListSpecialtiesArgs{
-		TenantId: tenantID,
-	}
+	listSpecArgs := servicecatalog.ListSpecialtiesArgs{}
 	var listSpecBytes []byte
 	_ = json.Encode(&listSpecArgs, &listSpecBytes)
 
@@ -122,7 +121,6 @@ func TestOperations(t *testing.T) {
 
 	// 2. Get item via OP
 	getArgs := servicecatalog.GetServiceArgs{
-		TenantId: tenantID,
 		Id:       createdItem.Id,
 	}
 	var getArgsBytes []byte
@@ -146,7 +144,6 @@ func TestOperations(t *testing.T) {
 
 	// 3. Find by SKU via OP
 	skuArgs := servicecatalog.FindServiceBySKUArgs{
-		TenantId: tenantID,
 		Sku:      "md-M1",
 	}
 	var skuArgsBytes []byte
@@ -209,7 +206,6 @@ func TestOperations(t *testing.T) {
 
 	// 6. List items via OP
 	listArgs := servicecatalog.ListServicesArgs{
-		TenantId:    tenantID,
 		SpecialtyId: createdSpec.Id,
 		ActiveOnly:  true,
 		Limit:       10,
@@ -235,7 +231,6 @@ func TestOperations(t *testing.T) {
 
 	// 7. Deactivate item via OP
 	deactivateArgs := servicecatalog.DeactivateServiceArgs{
-		TenantId: tenantID,
 		Id:       createdItem.Id,
 	}
 	var deactivateBytes []byte
@@ -291,7 +286,6 @@ func TestOperations(t *testing.T) {
 
 	// 10. List agreements via OP
 	listAgArgs := servicecatalog.ListAgreementsArgs{
-		TenantId:  tenantID,
 		ServiceId: upsertedItem.Id,
 	}
 	var listAgBytes []byte
@@ -315,7 +309,6 @@ func TestOperations(t *testing.T) {
 
 	// 11. Delete agreement via OP
 	deleteAgArgs := servicecatalog.DeleteAgreementArgs{
-		TenantId: tenantID,
 		Id:       upsertedAg.Id,
 	}
 	var deleteAgBytes []byte
@@ -333,6 +326,7 @@ func TestOperations(t *testing.T) {
 func TestOperationsErrorPaths(t *testing.T) {
 	db := orm.New(mem.New())
 	module, err := servicecatalog.New(db, servicecatalog.Deps{
+		TenantID: "tenant-1",
 		IDs: &MockIDGen{},
 	})
 	if err != nil {
