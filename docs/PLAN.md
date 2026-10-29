@@ -2,8 +2,10 @@
 PLAN: "refactor: errors through rpc.WriteError — the errors are model refusals; errors.go keeps only its constants"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 522937650972762527
+PR: https://github.com/veltylabs/service_catalog/pull/21
+REVIEWED_COMMIT: c03ad12e79329542926d5da44f2055505f4c34fc
 ---
 
 > Read AGENTS.md at the repo root before any change.
