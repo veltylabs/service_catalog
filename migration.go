@@ -1,8 +1,8 @@
 package servicecatalog
 
 import (
-	"webtyp.com/orm"
 	"webtyp.com/fmt"
+	"webtyp.com/model"
 )
 
 type CanonicalSpecialty struct {
@@ -55,7 +55,7 @@ func (m *Module) MigrateSpecialtiesAndServices(tenantId string) (MigrationReport
 		existing, err := m.GetSpecialtyByPrefix(tenantId, cs.Prefix)
 		if err == nil {
 			prefixToID = append(prefixToID, fmt.KeyValue{Key: cs.Prefix, Value: existing.Id})
-		} else if err == ErrSpecialtyNotFound || orm.IsNotFound(err) {
+		} else if model.KindOf(err) == model.ErrorNotFound {
 			spec := Specialty{
 				TenantId:    tenantId,
 				Prefix:      cs.Prefix,

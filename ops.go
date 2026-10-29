@@ -2,7 +2,6 @@ package servicecatalog
 
 import (
 	"webtyp.com/model"
-	"webtyp.com/orm"
 	"webtyp.com/router"
 	"webtyp.com/rpc"
 )
@@ -23,7 +22,7 @@ const (
 	OpDeactivateService = "deactivate_service"
 	OpDeleteService     = "delete_service"
 
-	OpListCurrencies = "list_currencies"
+	OpListCurrencies  = "list_currencies"
 	OpListAgreements  = "list_agreements"
 	OpUpsertAgreement = "upsert_agreement"
 	OpDeleteAgreement = "delete_agreement"
@@ -408,7 +407,7 @@ func (m *Module) opUpsertService(ctx router.Context) {
 			out, err = m.CreateService(item)
 		} else {
 			out, err = m.UpdateService(item)
-			if err != nil && (err == ErrNotFound || orm.IsNotFound(err)) {
+			if err != nil && model.KindOf(err) == model.ErrorNotFound {
 				out, err = m.CreateService(item)
 			}
 		}
@@ -503,7 +502,6 @@ func (m *Module) opDeleteServiceAgreement(ctx router.Context) {
 	}
 	ctx.WriteStatus(200)
 }
-
 
 func (m *Module) opListCurrencies(ctx router.Context) {
 	var args ListCurrenciesArgs
