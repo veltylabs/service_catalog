@@ -43,7 +43,6 @@ func (a *UpsertSpecialtyArgs) EncodeFields(w model.FieldWriter) {
 	for i := range a.Records {
 		arr.Object(&a.Records[i])
 	}
-	arr.Close()
 }
 func (a *UpsertSpecialtyArgs) DecodeFields(r model.FieldReader) {
 	if arr, ok := r.Array("records"); ok {
@@ -69,7 +68,6 @@ func (a *DeleteSpecialtiesArgs) EncodeFields(w model.FieldWriter) {
 	for _, id := range a.Ids {
 		arr.String(id)
 	}
-	arr.Close()
 }
 func (a *DeleteSpecialtiesArgs) DecodeFields(r model.FieldReader) {
 	if arr, ok := r.Array("ids"); ok {
@@ -95,7 +93,6 @@ func (a *UpsertServiceArgs) EncodeFields(w model.FieldWriter) {
 	for i := range a.Records {
 		arr.Object(&a.Records[i])
 	}
-	arr.Close()
 }
 func (a *UpsertServiceArgs) DecodeFields(r model.FieldReader) {
 	if arr, ok := r.Array("records"); ok {
@@ -121,7 +118,6 @@ func (a *DeleteServicesArgs) EncodeFields(w model.FieldWriter) {
 	for _, id := range a.Ids {
 		arr.String(id)
 	}
-	arr.Close()
 }
 func (a *DeleteServicesArgs) DecodeFields(r model.FieldReader) {
 	if arr, ok := r.Array("ids"); ok {
@@ -149,12 +145,10 @@ func (a *UpdateServiceArgs) EncodeFields(w model.FieldWriter) {
 	for _, id := range a.Ids {
 		ids.String(id)
 	}
-	ids.Close()
 	fields := w.Array("fields", len(a.Fields))
 	for _, f := range a.Fields {
 		fields.String(f)
 	}
-	fields.Close()
 	w.Object("record", &a.Record)
 }
 func (a *UpdateServiceArgs) DecodeFields(r model.FieldReader) {
