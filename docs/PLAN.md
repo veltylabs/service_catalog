@@ -2,8 +2,10 @@
 PLAN: "refactor: errors through rpc.WriteError — the errors are model refusals; errors.go keeps only its constants"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 522937650972762527
+PR: https://github.com/veltylabs/service_catalog/pull/21
+REVIEWED_COMMIT: c03ad12e79329542926d5da44f2055505f4c34fc
 ---
 
 > Read AGENTS.md at the repo root before any change.
@@ -99,3 +101,7 @@ GOPRIVATE=webtyp.com/*,github.com/veltylabs/* GOFLAGS=-mod=mod gotest
 | 2 | `ops.go`, `recipe.go`, `module.go` | compiles |
 | 3 | `tests/*` | suite green |
 | 4 | `README.md`, docs | text present |
+
+## Executor notes
+
+- Dropped `TestOps_InternalErrorHidesDetail` completely (no faulty block left) as advised, because `webtyp/rpc` v0.2.7 already proves a 500 hides its detail in `TestWriteError_InternalHidesDetail`.

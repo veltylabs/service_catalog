@@ -4,6 +4,7 @@ import (
 	"webtyp.com/model"
 	"webtyp.com/orm"
 	"webtyp.com/router"
+	"webtyp.com/rpc"
 	"webtyp.com/time"
 )
 
@@ -66,7 +67,7 @@ func (m *Module) UpsertServiceSupply(s ServiceSupply) (ServiceSupply, error) {
 	}
 	s.UpdatedAt = time.NowNano()
 	if err := s.Validate(action); err != nil {
-		return ServiceSupply{}, ValidationError{Err: err}
+		return ServiceSupply{}, err
 	}
 	if s.Quantity <= 0 {
 		return ServiceSupply{}, ErrQuantity
@@ -130,12 +131,12 @@ func (m *Module) ServiceRecipe(tenantId, serviceId string) (itemIds []string, qu
 func (m *Module) opListServiceSupplies(ctx router.Context) {
 	var args ListServiceSuppliesArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	items, err := m.ListServiceSupplies(args.TenantId, args.ServiceId)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	list := make(ServiceSupplyList, len(items))
@@ -143,34 +144,34 @@ func (m *Module) opListServiceSupplies(ctx router.Context) {
 		list[i] = &items[i]
 	}
 	if err := ctx.Encode(&list); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opUpsertServiceSupply(ctx router.Context) {
 	var s ServiceSupply
 	if err := ctx.Decode(&s); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	out, err := m.UpsertServiceSupply(s)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	if err := ctx.Encode(&out); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opDeleteServiceSupply(ctx router.Context) {
 	var args DeleteServiceSupplyArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if err := m.DeleteServiceSupply(args.TenantId, args.Id); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	ctx.WriteStatus(200)

@@ -117,11 +117,6 @@ func TestFormInputsGeneration(t *testing.T) {
 }
 
 func TestErrorAndModelName(t *testing.T) {
-	// Cover ValidationError.Error
-	ve := servicecatalog.ValidationError{Err: servicecatalog.ErrNotFound}
-	if ve.Error() == "" {
-		t.Error("expected ValidationError.Error to carry the wrapped message")
-	}
 
 	// Cover Module.ModelName
 	db := orm.New(mem.New())

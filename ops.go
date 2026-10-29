@@ -2,8 +2,8 @@ package servicecatalog
 
 import (
 	"webtyp.com/model"
-	"webtyp.com/orm"
 	"webtyp.com/router"
+	"webtyp.com/rpc"
 )
 
 // Nombres de las operaciones, tal como las ven el transporte y la vista: "<ModelName>.<name>".
@@ -22,7 +22,7 @@ const (
 	OpDeactivateService = "deactivate_service"
 	OpDeleteService     = "delete_service"
 
-	OpListCurrencies = "list_currencies"
+	OpListCurrencies  = "list_currencies"
 	OpListAgreements  = "list_agreements"
 	OpUpsertAgreement = "upsert_agreement"
 	OpDeleteAgreement = "delete_agreement"
@@ -204,12 +204,12 @@ var _ router.OperationModule = (*Module)(nil)
 func (m *Module) opListSpecialties(ctx router.Context) {
 	var args ListSpecialtiesArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	list, err := m.ListSpecialties(args.TenantId)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	resList := make(SpecialtyList, len(list))
@@ -217,63 +217,63 @@ func (m *Module) opListSpecialties(ctx router.Context) {
 		resList[i] = &list[i]
 	}
 	if err := ctx.Encode(&resList); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opGetSpecialty(ctx router.Context) {
 	var args GetSpecialtyArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	spec, err := m.GetSpecialty(args.TenantId, args.Id)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	if err := ctx.Encode(&spec); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opUpsertSpecialty(ctx router.Context) {
 	var args UpsertSpecialtyArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if len(args.Records) == 0 {
-		writeError(ctx, ErrNoRecords)
+		rpc.WriteError(ctx, ErrNoRecords)
 		return
 	}
 	var last Specialty
 	for _, spec := range args.Records {
 		out, err := m.UpsertSpecialty(spec)
 		if err != nil {
-			writeError(ctx, err)
+			rpc.WriteError(ctx, err)
 			return
 		}
 		last = out
 	}
 	if err := ctx.Encode(&last); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opDeleteSpecialty(ctx router.Context) {
 	var args DeleteSpecialtiesArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if len(args.Ids) == 0 {
-		writeError(ctx, ErrNoIds)
+		rpc.WriteError(ctx, ErrNoIds)
 		return
 	}
 	for _, id := range args.Ids {
 		if err := m.DeleteSpecialty("", id); err != nil {
-			writeError(ctx, err)
+			rpc.WriteError(ctx, err)
 			return
 		}
 	}
@@ -283,13 +283,13 @@ func (m *Module) opDeleteSpecialty(ctx router.Context) {
 func (m *Module) opListServices(ctx router.Context) {
 	var args ListServicesArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	filter := ServiceFilter{SpecialtyId: args.SpecialtyId, ActiveOnly: args.ActiveOnly, Limit: args.Limit, Offset: args.Offset}
 	items, err := m.ListServices(args.TenantId, filter)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	list := make(ServiceList, len(items))
@@ -297,72 +297,72 @@ func (m *Module) opListServices(ctx router.Context) {
 		list[i] = &items[i]
 	}
 	if err := ctx.Encode(&list); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opGetService(ctx router.Context) {
 	var args GetServiceArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	item, err := m.GetService(args.TenantId, args.Id)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	if err := ctx.Encode(&item); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opFindServiceBySKU(ctx router.Context) {
 	var args FindServiceBySKUArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	item, err := m.FindBySKU(args.TenantId, args.Sku)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	if err := ctx.Encode(&item); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opCreateService(ctx router.Context) {
 	var item Service
 	if err := ctx.Decode(&item); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	created, err := m.CreateService(item)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	if err := ctx.Encode(&created); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opUpdateService(ctx router.Context) {
 	var args UpdateServiceArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if len(args.Ids) == 0 {
-		writeError(ctx, ErrNoIds)
+		rpc.WriteError(ctx, ErrNoIds)
 		return
 	}
 	for _, id := range args.Ids {
 		existing, err := m.GetService("", id)
 		if err != nil {
-			writeError(ctx, err)
+			rpc.WriteError(ctx, err)
 			return
 		}
 		for _, f := range args.Fields {
@@ -382,7 +382,7 @@ func (m *Module) opUpdateService(ctx router.Context) {
 			}
 		}
 		if _, err := m.UpdateService(existing); err != nil {
-			writeError(ctx, err)
+			rpc.WriteError(ctx, err)
 			return
 		}
 	}
@@ -392,11 +392,11 @@ func (m *Module) opUpdateService(ctx router.Context) {
 func (m *Module) opUpsertService(ctx router.Context) {
 	var args UpsertServiceArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if len(args.Records) == 0 {
-		writeError(ctx, ErrNoRecords)
+		rpc.WriteError(ctx, ErrNoRecords)
 		return
 	}
 	var last Service
@@ -407,29 +407,29 @@ func (m *Module) opUpsertService(ctx router.Context) {
 			out, err = m.CreateService(item)
 		} else {
 			out, err = m.UpdateService(item)
-			if err != nil && (err == ErrNotFound || orm.IsNotFound(err)) {
+			if err != nil && model.KindOf(err) == model.ErrorNotFound {
 				out, err = m.CreateService(item)
 			}
 		}
 		if err != nil {
-			writeError(ctx, err)
+			rpc.WriteError(ctx, err)
 			return
 		}
 		last = out
 	}
 	if err := ctx.Encode(&last); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opDeactivateService(ctx router.Context) {
 	var args DeactivateServiceArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if err := m.DeactivateService(args.TenantId, args.Id); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	ctx.WriteStatus(200)
@@ -438,16 +438,16 @@ func (m *Module) opDeactivateService(ctx router.Context) {
 func (m *Module) opDeleteService(ctx router.Context) {
 	var args DeleteServicesArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if len(args.Ids) == 0 {
-		writeError(ctx, ErrNoIds)
+		rpc.WriteError(ctx, ErrNoIds)
 		return
 	}
 	for _, id := range args.Ids {
 		if err := m.DeleteService("", id); err != nil {
-			writeError(ctx, err)
+			rpc.WriteError(ctx, err)
 			return
 		}
 	}
@@ -457,12 +457,12 @@ func (m *Module) opDeleteService(ctx router.Context) {
 func (m *Module) opListServiceAgreements(ctx router.Context) {
 	var args ListAgreementsArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	items, err := m.ListServiceAgreements(args.TenantId, args.ServiceId)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	list := make(ServiceAgreementList, len(items))
@@ -470,44 +470,43 @@ func (m *Module) opListServiceAgreements(ctx router.Context) {
 		list[i] = &items[i]
 	}
 	if err := ctx.Encode(&list); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opUpsertServiceAgreement(ctx router.Context) {
 	var a ServiceAgreement
 	if err := ctx.Decode(&a); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	out, err := m.UpsertServiceAgreement(a)
 	if err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	if err := ctx.Encode(&out); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
 
 func (m *Module) opDeleteServiceAgreement(ctx router.Context) {
 	var args DeleteAgreementArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 	if err := m.DeleteServiceAgreement(args.TenantId, args.Id); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 		return
 	}
 	ctx.WriteStatus(200)
 }
 
-
 func (m *Module) opListCurrencies(ctx router.Context) {
 	var args ListCurrenciesArgs
 	if err := ctx.Decode(&args); err != nil {
-		writeError(ctx, decodeError{err})
+		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
 
@@ -517,6 +516,6 @@ func (m *Module) opListCurrencies(ctx router.Context) {
 	}
 
 	if err := ctx.Encode(&list); err != nil {
-		writeError(ctx, err)
+		rpc.WriteError(ctx, err)
 	}
 }
