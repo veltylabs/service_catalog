@@ -2,6 +2,8 @@
 PLAN: "refactor: errors through rpc.WriteError — the errors are model refusals; errors.go keeps only its constants"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 522937650972762527
 ---
 
 > Read AGENTS.md at the repo root before any change.
