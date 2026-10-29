@@ -14,8 +14,6 @@ const (
 	OpListServiceSupplies = "list_service_supplies"
 	OpUpsertServiceSupply = "upsert_service_supply"
 	OpDeleteServiceSupply = "delete_service_supply"
-
-
 )
 
 // ListServiceSupplies devuelve la receta de un servicio (o de todos los servicios si serviceId es ""), en orden de inserción.

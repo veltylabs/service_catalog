@@ -3,8 +3,8 @@ package ui
 import (
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/lang"
-	"webtyp.com/router"
 	"webtyp.com/model"
+	"webtyp.com/router"
 	"webtyp.com/view"
 )
 

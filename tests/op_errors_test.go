@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	servicecatalog "github.com/veltylabs/service_catalog"
+	"strings"
 	"webtyp.com/json"
 	"webtyp.com/model"
 	"webtyp.com/orm"
 	"webtyp.com/router/mock"
 	"webtyp.com/storage/mem"
-	"strings"
 )
 
 // Every refused operation says why: over HTTP (rpc) the body is the only thing a caller sees, and

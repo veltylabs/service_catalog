@@ -41,13 +41,13 @@ func TestServiceCard_UnknownOrOtherTenantNotFound(t *testing.T) {
 
 	// Create service
 	item, err := module.CreateService(servicecatalog.Service{
-		TenantId:    "t1",
-		SpecialtyId: spec.Id,
-		Sku:         "sku",
-		Name:        "Service",
-		Price:       100,
-		Currency:    "CLP",
-		IsActive:    true,
+		TenantId:     "t1",
+		SpecialtyId:  spec.Id,
+		Sku:          "sku",
+		Name:         "Service",
+		Price:        100,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	})
 	if err != nil {
@@ -107,13 +107,13 @@ func TestServiceCard_ReturnsNamePriceCurrencyActive(t *testing.T) {
 	}
 
 	activeItem, err := module.CreateService(servicecatalog.Service{
-		TenantId:    "t1",
-		SpecialtyId: spec.Id,
-		Sku:         "sku1",
-		Name:        "Active Service",
-		Price:       1000.50,
-		Currency:    "CLP",
-		IsActive:    true,
+		TenantId:     "t1",
+		SpecialtyId:  spec.Id,
+		Sku:          "sku1",
+		Name:         "Active Service",
+		Price:        1000.50,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	})
 	if err != nil {
@@ -121,13 +121,13 @@ func TestServiceCard_ReturnsNamePriceCurrencyActive(t *testing.T) {
 	}
 
 	inactiveItem, err := module.CreateService(servicecatalog.Service{
-		TenantId:    "t1",
-		SpecialtyId: spec.Id,
-		Sku:         "sku2",
-		Name:        "Inactive Service",
-		Price:       500,
-		Currency:    "CLP",
-		IsActive:    true,
+		TenantId:     "t1",
+		SpecialtyId:  spec.Id,
+		Sku:          "sku2",
+		Name:         "Inactive Service",
+		Price:        500,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	})
 	if err != nil {

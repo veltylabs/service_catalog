@@ -1,11 +1,11 @@
 package tests
 
 import (
-	"webtyp.com/router"
-	"webtyp.com/model"
-	"webtyp.com/router/mock"
-	"webtyp.com/json"
 	"testing"
+	"webtyp.com/json"
+	"webtyp.com/model"
+	"webtyp.com/router"
+	"webtyp.com/router/mock"
 
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/orm"
@@ -16,7 +16,7 @@ func TestTenantIsolation(t *testing.T) {
 	db := orm.New(mem.New())
 	module, err := servicecatalog.New(db, servicecatalog.Deps{
 		TenantID: "tenant-1",
-		IDs: &MockIDGen{},
+		IDs:      &MockIDGen{},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -28,7 +28,7 @@ func TestTenantIsolation(t *testing.T) {
 	// Create specialty for tenant A
 	specA, err := module.UpsertSpecialty(servicecatalog.Specialty{
 		TenantId: tenantA,
-		Prefix: "md",
+		Prefix:   "md",
 		Name:     "Medicina General",
 	})
 	if err != nil {
@@ -43,13 +43,13 @@ func TestTenantIsolation(t *testing.T) {
 
 	// Create an item as tenant A
 	itemA := servicecatalog.Service{
-		TenantId:    tenantA,
-		SpecialtyId: specA.Id,
-		Sku:         "md-SKU-A",
-		Name:        "Tenant A Product",
-		Price:       10.0,
-		Currency:    "CLP",
-		IsActive:    true,
+		TenantId:     tenantA,
+		SpecialtyId:  specA.Id,
+		Sku:          "md-SKU-A",
+		Name:         "Tenant A Product",
+		Price:        10.0,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	}
 
@@ -127,20 +127,20 @@ func TestTenantFromServer(t *testing.T) {
 
 	rA := &mock.Router{}
 	rA.Configure(mock.Config{Authn: func(next router.HandlerFunc) router.HandlerFunc {
-			return func(ctx router.Context) {
-				ctx.SetUserID("u1")
-				next(ctx)
-			}
-		}, Authorize: func(string, model.Resource, model.Action) bool { return true }})
+		return func(ctx router.Context) {
+			ctx.SetUserID("u1")
+			next(ctx)
+		}
+	}, Authorize: func(string, model.Resource, model.Action) bool { return true }})
 	modA.MountOperations(rA)
 
 	rB := &mock.Router{}
 	rB.Configure(mock.Config{Authn: func(next router.HandlerFunc) router.HandlerFunc {
-			return func(ctx router.Context) {
-				ctx.SetUserID("u1")
-				next(ctx)
-			}
-		}, Authorize: func(string, model.Resource, model.Action) bool { return true }})
+		return func(ctx router.Context) {
+			ctx.SetUserID("u1")
+			next(ctx)
+		}
+	}, Authorize: func(string, model.Resource, model.Action) bool { return true }})
 	modB.MountOperations(rB)
 
 	// Upsert via module A

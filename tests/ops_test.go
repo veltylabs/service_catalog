@@ -16,7 +16,7 @@ func TestOperations(t *testing.T) {
 	db := orm.New(mem.New())
 	pub := &MockPublisher{}
 	module, err := servicecatalog.New(db, servicecatalog.Deps{
-		TenantID: "tenant-1",
+		TenantID:  "tenant-1",
 		IDs:       &MockIDGen{},
 		Publisher: pub,
 	})
@@ -43,7 +43,7 @@ func TestOperations(t *testing.T) {
 	// 0. Upsert Specialty via OP
 	spec := servicecatalog.Specialty{
 		TenantId: tenantID,
-		Prefix: "md",
+		Prefix:   "md",
 		Name:     "Medicina General",
 	}
 	specArgs := servicecatalog.UpsertSpecialtyArgs{
@@ -91,13 +91,13 @@ func TestOperations(t *testing.T) {
 
 	// 1. Create item via OP
 	item := servicecatalog.Service{
-		TenantId:    tenantID,
-		SpecialtyId: createdSpec.Id,
-		Sku:         "md-M1",
-		Name:        "Mcp Product",
-		Price:       100.0,
-		Currency:    "CLP",
-		IsActive:    true,
+		TenantId:     tenantID,
+		SpecialtyId:  createdSpec.Id,
+		Sku:          "md-M1",
+		Name:         "Mcp Product",
+		Price:        100.0,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	}
 	var itemBytes []byte
@@ -121,7 +121,7 @@ func TestOperations(t *testing.T) {
 
 	// 2. Get item via OP
 	getArgs := servicecatalog.GetServiceArgs{
-		Id:       createdItem.Id,
+		Id: createdItem.Id,
 	}
 	var getArgsBytes []byte
 	_ = json.Encode(&getArgs, &getArgsBytes)
@@ -144,7 +144,7 @@ func TestOperations(t *testing.T) {
 
 	// 3. Find by SKU via OP
 	skuArgs := servicecatalog.FindServiceBySKUArgs{
-		Sku:      "md-M1",
+		Sku: "md-M1",
 	}
 	var skuArgsBytes []byte
 	_ = json.Encode(&skuArgs, &skuArgsBytes)
@@ -177,13 +177,13 @@ func TestOperations(t *testing.T) {
 
 	// 5. Upsert item via OP (Create with empty ID)
 	upsertService := servicecatalog.Service{
-		TenantId:    tenantID,
-		SpecialtyId: createdSpec.Id,
-		Sku:         "md-M2",
-		Name:        "Mcp Product 2",
-		Price:       200.0,
-		Currency:    "CLP",
-		IsActive:    true,
+		TenantId:     tenantID,
+		SpecialtyId:  createdSpec.Id,
+		Sku:          "md-M2",
+		Name:         "Mcp Product 2",
+		Price:        200.0,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	}
 	upsertArgs := servicecatalog.UpsertServiceArgs{
@@ -231,7 +231,7 @@ func TestOperations(t *testing.T) {
 
 	// 7. Deactivate item via OP
 	deactivateArgs := servicecatalog.DeactivateServiceArgs{
-		Id:       createdItem.Id,
+		Id: createdItem.Id,
 	}
 	var deactivateBytes []byte
 	_ = json.Encode(&deactivateArgs, &deactivateBytes)
@@ -309,7 +309,7 @@ func TestOperations(t *testing.T) {
 
 	// 11. Delete agreement via OP
 	deleteAgArgs := servicecatalog.DeleteAgreementArgs{
-		Id:       upsertedAg.Id,
+		Id: upsertedAg.Id,
 	}
 	var deleteAgBytes []byte
 	_ = json.Encode(&deleteAgArgs, &deleteAgBytes)
@@ -327,7 +327,7 @@ func TestOperationsErrorPaths(t *testing.T) {
 	db := orm.New(mem.New())
 	module, err := servicecatalog.New(db, servicecatalog.Deps{
 		TenantID: "tenant-1",
-		IDs: &MockIDGen{},
+		IDs:      &MockIDGen{},
 	})
 	if err != nil {
 		t.Fatal(err)

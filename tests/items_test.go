@@ -9,9 +9,9 @@ import (
 func TestItemsDeclaredOnFields(t *testing.T) {
 	// Construye un servicio con valores conocidos
 	srv := servicecatalog.Service{
-		Id: "svc123",
+		Id:   "svc123",
 		Name: "Consultation",
-		Sku: "SRV-01",
+		Sku:  "SRV-01",
 	}
 
 	// Verifica Item para Service
@@ -28,8 +28,8 @@ func TestItemsDeclaredOnFields(t *testing.T) {
 
 	// Construye una especialidad con valores conocidos
 	spec := servicecatalog.Specialty{
-		Id: "spc456",
-		Name: "Cardiology",
+		Id:     "spc456",
+		Name:   "Cardiology",
 		Prefix: "CAR",
 	}
 

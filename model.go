@@ -179,15 +179,13 @@ var CurrencyOptionModel = model.Definition{
 }
 
 var ListCurrenciesArgsModel = model.Definition{
-	Name: "list_currencies_args",
-	Fields: model.Fields{
-		},
+	Name:   "list_currencies_args",
+	Fields: model.Fields{},
 }
 
 var ListSpecialtiesArgsModel = model.Definition{
-	Name: "list_specialties_args",
-	Fields: model.Fields{
-		},
+	Name:   "list_specialties_args",
+	Fields: model.Fields{},
 }
 
 var GetSpecialtyArgsModel = model.Definition{

@@ -3,8 +3,8 @@ package tests
 import (
 	"testing"
 
-	"webtyp.com/model"
 	servicecatalog "github.com/veltylabs/service_catalog"
+	"webtyp.com/model"
 )
 
 func TestSentinelErrorTexts(t *testing.T) {

@@ -31,13 +31,13 @@ func TestCurrencyValidation(t *testing.T) {
 
 	// C1: Nil currencies, create in CLP -> success
 	srv1, err := module.CreateService(servicecatalog.Service{
-		TenantId:    "t1",
-		SpecialtyId: spec.Id,
-		Sku:         "AA01",
-		Name:        "Service 1",
-		Price:       100,
-		Currency:    "CLP",
-		IsActive:    true,
+		TenantId:     "t1",
+		SpecialtyId:  spec.Id,
+		Sku:          "AA01",
+		Name:         "Service 1",
+		Price:        100,
+		Currency:     "CLP",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	})
 	if err != nil {
@@ -46,13 +46,13 @@ func TestCurrencyValidation(t *testing.T) {
 
 	// C2: Nil currencies, create in USD -> fail
 	_, err = module.CreateService(servicecatalog.Service{
-		TenantId:    "t1",
-		SpecialtyId: spec.Id,
-		Sku:         "AA02",
-		Name:        "Service 2",
-		Price:       100,
-		Currency:    "USD",
-		IsActive:    true,
+		TenantId:     "t1",
+		SpecialtyId:  spec.Id,
+		Sku:          "AA02",
+		Name:         "Service 2",
+		Price:        100,
+		Currency:     "USD",
+		IsActive:     true,
 		TaxTreatment: "EXEMPT",
 	})
 	if err != servicecatalog.ErrUnsupportedCurrency {
