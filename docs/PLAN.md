@@ -2,6 +2,8 @@
 PLAN: "refactor: the tenant comes from the server (Deps.TenantID), never from the request; permissions named by the tables (model.ResourceOf)"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 11156536684367955011
 ---
 
 > Read AGENTS.md at the repo root before any change.
