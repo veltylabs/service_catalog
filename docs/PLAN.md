@@ -8,20 +8,20 @@ SESSION: 4817017239307385509
 
 > Read AGENTS.md at the repo root before any change.
 
-# Migrate with `ddl.Sync`
+# Migrar con `ddl.Sync`
 
-## Context
+## Contexto
 
-`migrate.Migrate` creates this repo's tables with `ddl.DB.CreateTable`, which compiles to `CREATE TABLE IF NOT EXISTS`:
-against a table that already exists it does nothing. So when a model gains a field, a database that is already
-installed never receives the new column, and the first read or write of that field fails in production.
-`ddl.DB.Sync` creates the missing table **and** adds the missing columns (it also renames a column the model declares
-as renamed, and drops a column only when it holds no data). Its flow, branch by branch, is this diagram — the tests
-below walk its branches: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md
+`migrate.Migrate` crea las tablas de este repositorio con `ddl.DB.CreateTable`, que compila a `CREATE TABLE IF NOT EXISTS`:
+contra una tabla que ya existe no hace nada. Entonces, cuando un modelo gana un campo, una base de datos que ya está
+instalada nunca recibe la nueva columna, y la primera lectura o escritura de ese campo falla en producción.
+`ddl.DB.Sync` crea la tabla que falta **y además** agrega las columnas faltantes (también renombra una columna que el modelo declara
+como renombrada, y elimina una columna solo cuando no contiene datos). Su flujo, rama por rama, es este diagrama — las pruebas
+a continuación recorren sus ramas: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md
 
-Rule decided for the whole ecosystem: nobody writes migration files; every library and module migrates with `Sync`.
+Regla decidida para todo el ecosistema: nadie escribe archivos de migración; cada biblioteca y módulo migra con `Sync`.
 
-## Tools
+## Herramientas
 
 ```bash
 go install webtyp.com/devflow/cmd/gotest@latest
@@ -29,28 +29,28 @@ go get webtyp.com/ddl@v0.0.36
 go mod tidy
 ```
 
-Environment: `GOPRIVATE=webtyp.com/*,github.com/veltylabs/*`, `GOFLAGS=-mod=mod`.
+Entorno: `GOPRIVATE=webtyp.com/*,github.com/veltylabs/*`, `GOFLAGS=-mod=mod`.
 
-## APIs used
+## APIs utilizadas
 
-| Symbol | Exact signature | Tag |
+| Símbolo | Firma exacta | Etiqueta |
 |---|---|---|
 | `ddl.New` | `func New(conn Execer, ddlCompiler Compiler) *DB` | `webtyp.com/ddl` v0.0.36 |
-| `(*ddl.DB).Sync` | `func (d *DB) Sync(models ...model.Model) error` — models in the order given; a connection without transactions syncs model by model | v0.0.36 |
+| `(*ddl.DB).Sync` | `func (d *DB) Sync(models ...model.Model) error` — modelos en el orden dado; una conexión sin transacciones sincroniza modelo por modelo | v0.0.36 |
 | `ddl.Execer` | `interface { Exec(query string, args ...any) error }` | v0.0.36 |
 | `ddl.Compiler` | `interface { CompileDDL(s Stmt, m model.Model) (query string, args []any, err error) }` | v0.0.36 |
-| `ddl.TableIntrospector` | `interface { TableColumns(table string) ([]string, error) }` — when the connection has it, `Sync` adds only the missing columns; when `TableColumns` fails, `Sync` returns that same error and touches no later model | v0.0.36 |
+| `ddl.TableIntrospector` | `interface { TableColumns(table string) ([]string, error) }` — cuando la conexión lo tiene, `Sync` agrega solo las columnas faltantes; cuando `TableColumns` falla, `Sync` devuelve ese mismo error y no toca ningún modelo posterior | v0.0.36 |
 | `ddl.Stmt` | `struct { Op Op; Table string; Database string; Column *model.Field; OldName string; ColumnName string }` | v0.0.36 |
-| `ddl.OpCreateTable`, `ddl.OpAddColumn` | constants of type `ddl.Op` | v0.0.36 |
-| `model.Model` | has `ModelName() string` and `Schema() []model.Field`; `model.Field.Name string` | `webtyp.com/model` (already required) |
+| `ddl.OpCreateTable`, `ddl.OpAddColumn` | constantes de tipo `ddl.Op` | v0.0.36 |
+| `model.Model` | tiene `ModelName() string` and `Schema() []model.Field`; `model.Field.Name string` | `webtyp.com/model` (ya requerido) |
 
-If a signature in the published tag differs from this table, stop and name the symbol in the PR; never adapt it by guessing.
+Si una firma en la etiqueta publicada difiere de esta tabla, detente y nombra el símbolo en el PR; nunca lo adaptes adivinando.
 
-## Stage 1 — tests first: `tests/migrate_test.go` (new file)
+## Etapa 1 — pruebas primero: `tests/migrate_test.go` (new file)
 
-Use the package name the other files in `tests/` already use (`package tests` if the folder is new). The tests are
-written **before** the code: run `gotest` after this stage and see `TestMigrate_NewField_AddsOnlyThatColumn` fail
-(today the migration never adds a column). Write exactly this file:
+Usa el nombre del paquete que ya usan los otros archivos en `tests/` (`package tests` si la carpeta es nueva). Las pruebas se
+escriben **antes** del código: ejecuta `gotest` después de esta etapa y observa cómo falla `TestMigrate_NewField_AddsOnlyThatColumn`
+(hoy la migración nunca agrega una columna). Escribe exactamente este archivo:
 
 ```go
 package tests
@@ -67,7 +67,7 @@ import (
 )
 
 // migrateConn is the database the migration sees: Exec does nothing, and
-// TableColumns answers which columns each table already has.
+// TableColumns answers which columns each table already tiene.
 type migrateConn struct {
 	existing  []tableColumns
 	failTable string
@@ -182,14 +182,14 @@ func TestMigrate_IntrospectionFails_ReturnsErrorAndStops(t *testing.T) {
 }
 ```
 
-- Delete `migrate/migrate_test.go`: it asserted one `Exec` per table, which `Sync` no longer is. Its cases move to the new file. Check: `test ! -e migrate/migrate_test.go`.
+- Elimina `migrate/migrate_test.go`: afirmaba un `Exec` por tabla, lo cual `Sync` ya no es. Sus casos se mueven al nuevo archivo. Comprueba: `test ! -e migrate/migrate_test.go`.
 
-Commit after this stage (the red test is expected here).
+Haz un commit después de esta etapa (la prueba en rojo se espera aquí).
 
-## Stage 2 — `migrate/migrate.go`
+## Etapa 2 — `migrate/migrate.go`
 
-Replace **only the body** of `Migrate`, keeping its signature, its parameter names and the existing doc comments
-(package and function). The body becomes exactly:
+Reemplaza **solo el cuerpo** de `Migrate`, manteniendo su firma, los nombres de sus parámetros y los comentarios de documentación existentes
+(paquete y función). El cuerpo se convierte exactamente en:
 
 ```go
 	// Sync y no CreateTable: crea la tabla que falta y además agrega las columnas que un modelo
@@ -202,40 +202,40 @@ Replace **only the body** of `Migrate`, keeping its signature, its parameter nam
 	)
 ```
 
-Remove any import that becomes unused. Run `gotest`: the three tests pass. Commit after this stage.
+Elimina cualquier importación que quede sin uso. Ejecuta `gotest`: las tres pruebas pasan. Haz un commit después de esta etapa.
 
-## Stage 3 — docs
+## Etapa 3 — docs
 
-If `README.md` or any `docs/*.md` says the tables are created with `CreateTable` (or "creates the tables" without
-mentioning that new columns are added), change it to say that `migrate.Migrate` uses `ddl.Sync`, en español, and
-link the diagram https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md. If no doc mentions the migration, add one line to `README.md` under its usage or
-installation section saying so. Commit after this stage.
+Si `README.md` o cualquier `docs/*.md` dice que las tablas se crean con `CreateTable` (o "crea las tablas" sin
+mencionar que se agregan nuevas columnas), cámbialo para decir que `migrate.Migrate` usa `ddl.Sync`, en español, y
+enlaza el diagrama https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md. Si ningún documento menciona la migración, agrega una línea a `README.md` bajo su sección de uso o
+instalación diciéndolo. Haz un commit después de esta etapa.
 
-## Stage 4 — language
+## Etapa 4 — language
 
-Translate to Spanish every `README.md`, `docs/*` file, diagram and code comment of this repo that is still in English
-(only those; never rewrite what is already Spanish), and add a short usage example (`// Ejemplo: …`) to every exported
-symbol's comment that lacks one. Code, identifiers and translation keys stay in English. Commit after this stage.
+Traduce al español cada archivo `README.md`, `docs/*`, diagrama y comentario de código de este repositorio que todavía esté en inglés
+(solo esos; nunca reescribas lo que ya está en español), y agrega un breve ejemplo de uso (`// Ejemplo: …`) a cada comentario
+de símbolo exportado que no tenga uno. El código, los identificadores y las claves de traducción permanecen en inglés. Haz un commit después de esta etapa.
 
-## Delivery check
+## Comprobación de entrega
 
-1. `gotest` passes (it builds, vets and runs every test). A PR that does not compile, or whose tests could not run, is a failed delivery.
-2. `grep -rn "CreateTable(" --include=*.go . | grep -v _test.go` → empty.
-3. `git diff --stat main` lists `tests/migrate_test.go`, `migrate/migrate.go`, `go.mod`, `go.sum`, the docs touched, the deleted test file — nothing else deleted.
+1. `gotest` pasa (compila, revisa y ejecuta todas las pruebas). Un PR que no compila, o cuyas pruebas no pudieron ejecutarse, es una entrega fallida.
+2. `grep -rn "CreateTable(" --include=*.go . | grep -v _test.go` → vacío.
+3. `git diff --stat main` enumera `tests/migrate_test.go`, `migrate/migrate.go`, `go.mod`, `go.sum`, los documentos tocados, el archivo de prueba eliminado — nada más eliminado.
 
-## Delivery rules
+## Reglas de entrega
 
-- Never pause to ask permission or report progress: when the delivery check passes, commit, push and open the PR. Stuck
-  for 30 minutes: open the PR anyway, listing what fails.
-- Commit after every stage. Never run `git reset`, `git restore`, `git checkout -- <file>` or `git stash` on your own work.
-- Never edit a generated file (`model_orm.go`): a build error there means the hand-written code is wrong.
-- Do not change the models, their order, or any other package.
+- Nunca te detengas para pedir permiso o informar progreso: cuando pase la verificación de entrega, haz commit, push y abre el PR. Atrapado
+  por 30 minutos: abre el PR de todos modos, listando lo que falla.
+- Haz commit después de cada etapa. Nunca ejecutes `git reset`, `git restore`, `git checkout -- <archivo>` o `git stash` en tu propio trabajo.
+- Nunca edites un archivo generado (`model_orm.go`): un error de compilación allí significa que el código escrito a mano está mal.
+- No cambies los modelos, su orden o cualquier otro paquete.
 
-## Stages
+## Etapas
 
-| # | Files | Result |
+| # | Archivos | Resultado |
 |---|---|---|
-| 1 | `tests/migrate_test.go`, delete migrate/migrate_test.go | Three tests, one per branch; the new-field test is red |
-| 2 | `migrate/migrate.go` | `Migrate` uses `Sync`; all green |
-| 3 | `README.md` / `docs/*` | The migration is documented with the diagram |
-| 4 | every `README.md`, `docs/*`, comment still in English | Spanish |
+| 1 | `tests/migrate_test.go`, delete migrate/migrate_test.go | Tres pruebas, una por rama; la prueba de campo nuevo es roja |
+| 2 | `migrate/migrate.go` | `Migrate` usa `Sync`; todo verde |
+| 3 | `README.md` / `docs/*` | La migración está documentada con el diagrama |
+| 4 | cada `README.md`, `docs/*`, comentario aún en inglés | Español |

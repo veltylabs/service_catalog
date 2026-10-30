@@ -12,7 +12,7 @@ El módulo `service-catalog` gestiona el catálogo de servicios y sus especialid
 ## Patrones
 - **Arnés de módulo reutilizable**: el módulo está acoplado solo a contratos publicados, no a infraestructura concreta — ver `AGENTS.md` (la raíz de este repo) para la lista completa de permitidos/prohibidos a la que debe adherirse este módulo:
     - `orm.DB` para el almacenamiento (agnóstico al backend — envuelve cualquier `storage.Conn` que la app inyecte).
-    - `ddl.CreateTable`/`ddl.Sync` (sobre `db.RawConn()`) para la migración del propio esquema del módulo en `New()` — reemplaza al obsoleto `orm.DB.CreateTable`.
+    - Las tablas se crean y migran usando `ddl.Sync` (flujo de sincronización: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md).
     - `router.OpModule` (`ModelName()` + `MountOps(reg router.OpRegistry)`) para el transporte — el módulo nunca ve `router.Router`/`router.APIModule`, y nunca importa `tinywasm/mcp`.
     - `model.IDGenerator` para la identidad (`Deps.IDs`, requerido — el módulo nunca construye el suyo propio).
     - `events.Publisher` para actualizaciones controladas por eventos (`Deps.Publisher`, opcional — `nil` desactiva la publicación silenciosamente).

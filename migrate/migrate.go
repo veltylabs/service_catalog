@@ -22,18 +22,12 @@ import (
 // para invocadores locales/de prueba.
 // Ejemplo: err := migrate.Migrate(conn, compiler)
 func Migrate(conn ddl.Execer, ddlCompiler ddl.Compiler) error {
-	d := ddl.New(conn, ddlCompiler)
-	if err := d.CreateTable(&servicecatalog.Specialty{}); err != nil {
-		return err
-	}
-	if err := d.CreateTable(&servicecatalog.Service{}); err != nil {
-		return err
-	}
-	if err := d.CreateTable(&servicecatalog.ServiceSupply{}); err != nil {
-		return err
-	}
-	if err := d.CreateTable(&servicecatalog.ServiceAgreement{}); err != nil {
-		return err
-	}
-	return nil
+	// Sync y no CreateTable: crea la tabla que falta y además agrega las columnas que un modelo
+	// ganó, así un campo nuevo llega a una base ya instalada. Flujo: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md
+	return ddl.New(conn, ddlCompiler).Sync(
+		&servicecatalog.Specialty{},
+		&servicecatalog.Service{},
+		&servicecatalog.ServiceSupply{},
+		&servicecatalog.ServiceAgreement{},
+	)
 }

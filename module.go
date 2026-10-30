@@ -45,6 +45,7 @@ var (
 	errDepsTenantID = "service_catalog: Deps.TenantID"
 )
 
+// Ejemplo: module, err := servicecatalog.New(db, deps)
 func New(db *orm.DB, deps Deps) (*Module, error) {
 	if deps.IDs == nil {
 		return nil, fmt.Err(errDepsIDs, "is required")
