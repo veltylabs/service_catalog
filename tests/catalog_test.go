@@ -26,7 +26,7 @@ func TestCatalog(t *testing.T) {
 
 	tenantID := "tenant-1"
 
-	// Create specialty first
+	// Crea la especialidad primero
 	spec, err := module.UpsertSpecialty(servicecatalog.Specialty{
 		TenantId: tenantID,
 		Prefix:   "md",
@@ -36,7 +36,7 @@ func TestCatalog(t *testing.T) {
 		t.Fatalf("failed to create specialty: %v", err)
 	}
 
-	// Test CreateService
+	// Prueba CreateService
 	item := servicecatalog.Service{
 		TenantId:     tenantID,
 		SpecialtyId:  spec.Id,
@@ -56,13 +56,13 @@ func TestCatalog(t *testing.T) {
 		t.Error("expected non-empty ID")
 	}
 
-	// Test duplicate SKU
+	// Prueba SKU duplicado
 	_, err = module.CreateService(item)
 	if err == nil {
 		t.Error("expected error for duplicate SKU")
 	}
 
-	// Test FindBySKU
+	// Prueba FindBySKU
 	found, err := module.FindBySKU(tenantID, "md1234")
 	if err != nil {
 		t.Errorf("failed to find item by SKU: %v", err)
@@ -71,7 +71,7 @@ func TestCatalog(t *testing.T) {
 		t.Errorf("expected ID %s, got %s", created.Id, found.Id)
 	}
 
-	// Test GetService
+	// Prueba GetService
 	found, err = module.GetService(tenantID, created.Id)
 	if err != nil {
 		t.Errorf("failed to get item: %v", err)
@@ -80,13 +80,13 @@ func TestCatalog(t *testing.T) {
 		t.Errorf("expected SKU md1234, got %s", found.Sku)
 	}
 
-	// Test ServiceExists
+	// Prueba ServiceExists
 	exists, err := module.ServiceExists(tenantID, created.Id)
 	if err != nil || !exists {
 		t.Errorf("expected ServiceExists to be true, got %v, err: %v", exists, err)
 	}
 
-	// Test UpdateService
+	// Prueba UpdateService
 	created.Name = "Updated Name"
 	updated, err := module.UpdateService(created)
 	if err != nil {
@@ -96,7 +96,7 @@ func TestCatalog(t *testing.T) {
 		t.Errorf("expected Name Updated Name, got %s", updated.Name)
 	}
 
-	// Test ListServices
+	// Prueba ListServices
 	items, err := module.ListServices(tenantID, servicecatalog.ServiceFilter{})
 	if err != nil {
 		t.Errorf("failed to list items: %v", err)
@@ -105,7 +105,7 @@ func TestCatalog(t *testing.T) {
 		t.Errorf("expected 1 item, got %d", len(items))
 	}
 
-	// Create second specialty and item to test filter isolation between two real specialties
+	// Crea segunda especialidad e ítem para probar el aislamiento de filtros entre dos especialidades reales
 	spec2, err := module.UpsertSpecialty(servicecatalog.Specialty{
 		TenantId: tenantID,
 		Prefix:   "of",
@@ -130,7 +130,7 @@ func TestCatalog(t *testing.T) {
 		t.Fatalf("failed to create item 2: %v", err)
 	}
 
-	// Test ListServices with filter matching spec1
+	// Prueba ListServices con filtro que coincida con spec1
 	filteredItems, err := module.ListServices(tenantID, servicecatalog.ServiceFilter{
 		SpecialtyId: spec.Id,
 		ActiveOnly:  true,
@@ -144,7 +144,7 @@ func TestCatalog(t *testing.T) {
 		t.Errorf("expected 1 item with specialty spec1 ID %s, got %d items", created.Id, len(filteredItems))
 	}
 
-	// Test ListServices with filter matching spec2
+	// Prueba ListServices con filtro que coincida con spec2
 	filteredItems2, err := module.ListServices(tenantID, servicecatalog.ServiceFilter{
 		SpecialtyId: spec2.Id,
 	})
@@ -155,7 +155,7 @@ func TestCatalog(t *testing.T) {
 		t.Errorf("expected 1 item with specialty spec2 ID %s, got %d items", created2.Id, len(filteredItems2))
 	}
 
-	// Clean up second item and specialty for rest of test flow
+	// Limpia el segundo ítem y especialidad para el resto del flujo de prueba
 	if err := module.DeleteService(tenantID, created2.Id); err != nil {
 		t.Fatalf("failed to delete item 2: %v", err)
 	}
@@ -163,13 +163,13 @@ func TestCatalog(t *testing.T) {
 		t.Fatalf("failed to delete specialty 2: %v", err)
 	}
 
-	// Test DeleteSpecialty while in use -> should fail with ErrSpecialtyInUse
+	// Prueba DeleteSpecialty mientras está en uso -> debe fallar con ErrSpecialtyInUse
 	err = module.DeleteSpecialty(tenantID, spec.Id)
 	if err == nil || err.Error() != servicecatalog.ErrSpecialtyInUse.Error() {
 		t.Errorf("expected ErrSpecialtyInUse, got %v", err)
 	}
 
-	// Test DeactivateService
+	// Prueba DeactivateService
 	err = module.DeactivateService(tenantID, created.Id)
 	if err != nil {
 		t.Errorf("failed to deactivate item: %v", err)
@@ -179,13 +179,13 @@ func TestCatalog(t *testing.T) {
 		t.Error("expected item to be inactive")
 	}
 
-	// Test ServiceExists for inactive
+	// Prueba ServiceExists para inactivo
 	exists, err = module.ServiceExists(tenantID, created.Id)
 	if err != nil || exists {
 		t.Errorf("expected ServiceExists to be false for inactive, got %v", exists)
 	}
 
-	// Test DeleteService
+	// Prueba DeleteService
 	err = module.DeleteService(tenantID, created.Id)
 	if err != nil {
 		t.Errorf("failed to delete item: %v", err)
@@ -195,7 +195,7 @@ func TestCatalog(t *testing.T) {
 		t.Error("expected error getting deleted item")
 	}
 
-	// Test DeleteSpecialty now that item is deleted -> should succeed
+	// Prueba DeleteSpecialty ahora que el ítem fue eliminado -> debería tener éxito
 	err = module.DeleteSpecialty(tenantID, spec.Id)
 	if err != nil {
 		t.Errorf("failed to delete specialty after item deletion: %v", err)
@@ -212,7 +212,7 @@ func TestSpecialtyUniquenessAndDefaults(t *testing.T) {
 	tenant1 := "tenant-1"
 	tenant2 := "tenant-2"
 
-	// 1. Create specialty in tenant 1
+	// 1. Crea la especialidad en el inquilino 1
 	spec1, err := module.UpsertSpecialty(servicecatalog.Specialty{
 		TenantId: tenant1,
 		Prefix:   "md",
@@ -222,12 +222,12 @@ func TestSpecialtyUniquenessAndDefaults(t *testing.T) {
 		t.Fatalf("failed to create specialty: %v", err)
 	}
 
-	// Verify is_published defaults to false
+	// Verifica que is_published sea false por defecto
 	if spec1.IsPublished {
 		t.Error("expected is_published to default to false")
 	}
 
-	// 2. Duplicate prefix in tenant 1 -> rejected
+	// 2. Prefijo duplicado en el inquilino 1 -> rechazado
 	_, err = module.UpsertSpecialty(servicecatalog.Specialty{
 		TenantId: tenant1,
 		Prefix:   "md",
@@ -237,7 +237,7 @@ func TestSpecialtyUniquenessAndDefaults(t *testing.T) {
 		t.Errorf("expected ErrSpecialtyPrefixExists, got %v", err)
 	}
 
-	// 4. Same prefix in tenant 2 -> allowed
+	// 4. Mismo prefijo en el inquilino 2 -> permitido
 	spec2, err := module.UpsertSpecialty(servicecatalog.Specialty{
 		TenantId: tenant2,
 		Prefix:   "of",
@@ -260,7 +260,7 @@ func TestMigration(t *testing.T) {
 
 	tenantID := "tenant-1"
 
-	// Create item with canonical prefix "mdcong" directly in DB (simulating legacy data before migration)
+	// Crea el ítem con el prefijo canónico "mdcong" directamente en BD (simulando datos legados antes de la migración)
 	item1 := servicecatalog.Service{
 		Id:           "unmigrated-1",
 		TenantId:     tenantID,
@@ -275,7 +275,7 @@ func TestMigration(t *testing.T) {
 		t.Fatalf("failed to create unmigrated item 1: %v", err)
 	}
 
-	// Create item with unknown prefix "zz1234" directly in DB
+	// Crea el ítem con prefijo desconocido "zz1234" directamente en BD
 	item2 := servicecatalog.Service{
 		Id:           "unmigrated-2",
 		TenantId:     tenantID,
@@ -290,7 +290,7 @@ func TestMigration(t *testing.T) {
 		t.Fatalf("failed to create unmigrated item 2: %v", err)
 	}
 
-	// Run migration
+	// Ejecuta la migración
 	report, err := module.MigrateSpecialtiesAndServices(tenantID)
 	if err != nil {
 		t.Fatalf("migration failed: %v", err)
@@ -303,7 +303,7 @@ func TestMigration(t *testing.T) {
 		t.Errorf("expected [zz1234] in unmatched SKUs, got %v", report.UnmatchedSKUs)
 	}
 
-	// Verify item 1 has specialty_id set to "md" specialty ID
+	// Verifica que el ítem 1 tenga specialty_id configurado al ID de la especialidad "md"
 	migrated1, err := module.GetService(tenantID, "unmigrated-1")
 	if err != nil {
 		t.Fatal(err)
@@ -320,7 +320,7 @@ func TestMigration(t *testing.T) {
 		t.Errorf("expected specialty_id %s, got %s", specMD.Id, migrated1.SpecialtyId)
 	}
 
-	// Verify item 2 specialty_id is still empty
+	// Verifica que specialty_id del ítem 2 sigue vacío
 	migrated2, err := module.GetService(tenantID, "unmigrated-2")
 	if err != nil {
 		t.Fatal(err)
@@ -354,7 +354,7 @@ func TestServiceAgreements(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Create Service first so foreign key validation is satisfied
+	// Crea el servicio primero para satisfacer la validación de llave foránea
 	goodItem := servicecatalog.Service{
 		TenantId:     tenantID,
 		SpecialtyId:  spec.Id,
@@ -371,10 +371,10 @@ func TestServiceAgreements(t *testing.T) {
 	}
 	itemID := createdItem.Id
 
-	// Clear events before testing agreements
+	// Limpia los eventos antes de probar los convenios
 	pub.Events = nil
 
-	// 1. Test UpsertServiceAgreement - Create (Id == "")
+	// 1. Prueba UpsertServiceAgreement - Crear (Id == "")
 	ag := servicecatalog.ServiceAgreement{
 		TenantId:  tenantID,
 		ServiceId: itemID,
@@ -398,7 +398,7 @@ func TestServiceAgreements(t *testing.T) {
 		t.Errorf("expected catalog.service_agreement.created event, got %v", pub.Events)
 	}
 
-	// 2. Test ListServiceAgreements - Filter by Tenant and Item ID
+	// 2. Prueba ListServiceAgreements - Filtrar por inquilino y ID de ítem
 	list, err := module.ListServiceAgreements(tenantID, itemID)
 	if err != nil {
 		t.Fatalf("failed to list agreements: %v", err)
@@ -410,7 +410,7 @@ func TestServiceAgreements(t *testing.T) {
 		t.Errorf("expected ID %s, got %s", created.Id, list[0].Id)
 	}
 
-	// Filter by non-existent item id
+	// Filtra por ID de ítem inexistente
 	emptyList, err := module.ListServiceAgreements(tenantID, "non-existent")
 	if err != nil {
 		t.Fatalf("failed to list agreements: %v", err)
@@ -419,7 +419,7 @@ func TestServiceAgreements(t *testing.T) {
 		t.Errorf("expected 0 agreements, got %d", len(emptyList))
 	}
 
-	// 3. Test UpsertServiceAgreement - Update (Id != "")
+	// 3. Prueba UpsertServiceAgreement - Actualizar (Id != "")
 	created.Price = 9000.0
 	updated, err := module.UpsertServiceAgreement(created)
 	if err != nil {
@@ -432,7 +432,7 @@ func TestServiceAgreements(t *testing.T) {
 		t.Errorf("expected catalog.service_agreement.updated event, got %v", pub.Events)
 	}
 
-	// 4. Test DeleteServiceAgreement
+	// 4. Prueba DeleteServiceAgreement
 	err = module.DeleteServiceAgreement(tenantID, updated.Id)
 	if err != nil {
 		t.Fatalf("failed to delete agreement: %v", err)
@@ -497,7 +497,7 @@ func TestTaxTreatmentValidation(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Unknown tax treatment should fail
+	// Tratamiento fiscal desconocido debería fallar
 	badService := servicecatalog.Service{
 		TenantId:    "t1",
 		SpecialtyId: spec.Id,
@@ -511,7 +511,7 @@ func TestTaxTreatmentValidation(t *testing.T) {
 		t.Error("expected error for unknown tax treatment")
 	}
 
-	// Valid tax treatments should succeed
+	// Tratamientos fiscales válidos deberían tener éxito
 	s2 := servicecatalog.Service{
 		TenantId:    "t1",
 		SpecialtyId: spec.Id,

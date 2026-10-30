@@ -8,6 +8,8 @@ Los productos y suministros son otros módulos (`pharmacy_manager`, `supply_mana
 
 ## Inicio Rápido
 
+Las tablas se crean y migran usando `ddl.Sync` (flujo de sincronización: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md).
+
 ```go
 import (
 	"webtyp.com/orm"

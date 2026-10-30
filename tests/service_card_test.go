@@ -139,7 +139,7 @@ func TestServiceCard_ReturnsNamePriceCurrencyActive(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Test activo
+	// Prueba activo
 	name, price, currency, active, err := module.ServiceCard("t1", activeItem.Id)
 	if err != nil {
 		t.Fatalf("expected nil error, got %v", err)
@@ -148,7 +148,7 @@ func TestServiceCard_ReturnsNamePriceCurrencyActive(t *testing.T) {
 		t.Fatalf("got unexpected active item fields: %q, %v, %q, %v", name, price, currency, active)
 	}
 
-	// Test inactivo
+	// Prueba inactivo
 	name, price, currency, active, err = module.ServiceCard("t1", inactiveItem.Id)
 	if err != nil {
 		t.Fatalf("expected nil error, got %v", err)
