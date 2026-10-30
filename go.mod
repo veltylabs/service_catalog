@@ -30,5 +30,5 @@ require (
 	webtyp.com/fetch v0.1.29 // indirect
 	webtyp.com/filepath v0.1.0 // indirect
 	webtyp.com/font v0.0.6 // indirect
-	webtyp.com/widget v0.6.45 // indirect
+	webtyp.com/widget v0.6.46 // indirect
 )
