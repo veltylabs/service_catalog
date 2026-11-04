@@ -10,6 +10,7 @@ El módulo `service-catalog` gestiona el catálogo de servicios y sus especialid
 - **Agreement** (Convenio): Representa un convenio de facturación/aseguradora asociado a un servicio. Un servicio puede tener múltiples convenios, cada uno especificando una aseguradora (ej., FONASA, Isapre X), código, precio, y estado activo.
 
 ## Patrones
+- Las fechas que ve una persona salen de la zona de la instalación (`Deps.Zone` / `BrowserDeps.Zone`); un día guardado como clave usa las funciones UTC.
 - **Arnés de módulo reutilizable**: el módulo está acoplado solo a contratos publicados, no a infraestructura concreta — ver `AGENTS.md` (la raíz de este repo) para la lista completa de permitidos/prohibidos a la que debe adherirse este módulo:
     - `orm.DB` para el almacenamiento (agnóstico al backend — envuelve cualquier `storage.Conn` que la app inyecte).
     - Las tablas se crean y migran usando `ddl.Sync` (flujo de sincronización: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md).

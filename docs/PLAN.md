@@ -2,8 +2,10 @@
 PLAN: "refactor: screens get appkit.BrowserDeps (appkit v0.2.7)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 914387174415913195
+PR: https://github.com/veltylabs/service_catalog/pull/24
+REVIEWED_COMMIT: ee4453abec55cba299e4ecaf255b250ecfa14aea
 ---
 
 > Read AGENTS.md at the repo root before any change.
@@ -70,3 +72,6 @@ Every test, seed and `web/` demo that builds what changed passes a zone: `zone, 
 
 Commit after every stage. Never edit a generated `*_orm.go`. Never run `git reset`, `git restore`, `git checkout --
 <file>` or `git stash` on your own work. Stuck 30 minutes: open the PR anyway listing what fails.
+
+## Executor notes
+All steps completed successfully.
