@@ -57,12 +57,17 @@ var ServiceModel = model.Definition{
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
 		{Name: "specialty_id", Type: input.Select(), Label: "Specialty", Ref: &SpecialtyModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 		{Name: "sku", Type: input.Text(), Label: "SKU", NotNull: true, Item: model.ItemDescription, Permitted: model.Permitted{Letters: true, Numbers: true, Extra: []rune{'-'}, Minimum: 1, Maximum: 50}},
-		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Item: model.ItemLabel, Permitted: model.Permitted{Minimum: 1, Maximum: 255}},
+		// Nombres clínicos reales llevan guion y barra: "Tórax simple (AP-PA)", "Columna lumbar AP/LAT".
+		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Item: model.ItemLabel,
+			Permitted: model.Permitted{Letters: true, Tilde: true, Numbers: true, Spaces: true,
+				Extra: []rune{'.', ',', '(', ')', '-', '/', '+'}, Minimum: 1, Maximum: 255}},
 		{Name: "description", Type: input.Textarea(), Label: "Description", Help: "Public information: patients read it when booking. Say what the service includes, how long it takes or how to prepare.", OmitEmpty: true},
 		{Name: "tax_treatment", Type: input.Select(), Label: "Tax treatment", Help: "Exempt: a health service without IVA (consultations and most exams). Taxed: it carries 19% IVA.", NotNull: true},
-		{Name: "price", Type: input.Decimal(), Label: "Price", NotNull: true},
+		// Sin NotNull: 0 es válido (precio pendiente). La regla real la aplica checkPrice: un servicio activo necesita precio.
+		{Name: "price", Type: input.Decimal(), Label: "Price"},
 		{Name: "currency", Type: input.Select(), Label: "Currency", NotNull: true, Permitted: model.Permitted{Letters: true, Minimum: 3, Maximum: 3}},
-		{Name: "is_active", Type: input.Checkbox(), Label: "Active", Help: "Only active services can be booked and charged. Turn it off to stop offering it without losing its history.", NotNull: true},
+		// Sin NotNull: para un bool rechazaría false y no se podría guardar un servicio inactivo (ver is_published).
+		{Name: "is_active", Type: input.Checkbox(), Label: "Active", Help: "Only active services can be booked and charged. Turn it off to stop offering it without losing its history."},
 		{Name: "updated_at", Type: model.NanoTime(), OmitEmpty: true},
 	},
 }
@@ -76,7 +81,7 @@ var ServiceAgreementModel = model.Definition{
 		{Name: "insurer", Type: input.Text(), Label: "Insurer", NotNull: true, Permitted: model.Permitted{Letters: true, Spaces: true, Minimum: 1, Maximum: 100}},
 		{Name: "code", Type: input.Text(), Label: "Code", OmitEmpty: true, Permitted: model.Permitted{Letters: true, Numbers: true, Extra: []rune{'-'}, Minimum: 1, Maximum: 50}},
 		{Name: "price", Type: input.Decimal(), Label: "Price", OmitEmpty: true},
-		{Name: "is_active", Type: input.Checkbox(), Label: "Active", NotNull: true},
+		{Name: "is_active", Type: input.Checkbox(), Label: "Active"}, // sin NotNull: rechazaría false (ver is_published)
 		{Name: "updated_at", Type: model.NanoTime(), OmitEmpty: true},
 	},
 }

@@ -302,6 +302,9 @@ func (m *Module) CreateService(item Service) (Service, error) {
 	if item.TaxTreatment != TaxTaxed && item.TaxTreatment != TaxExempt {
 		return Service{}, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
 	}
+	if err := checkPrice(item); err != nil {
+		return Service{}, err
+	}
 
 	// Validar la unicidad del SKU por inquilino
 	existing, err := m.FindBySKU(item.TenantId, item.Sku)
@@ -341,6 +344,9 @@ func (m *Module) UpdateService(item Service) (Service, error) {
 
 	if item.TaxTreatment != TaxTaxed && item.TaxTreatment != TaxExempt {
 		return Service{}, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
+	}
+	if err := checkPrice(item); err != nil {
+		return Service{}, err
 	}
 
 	// Verificar que el ítem existe y pertenece al inquilino
@@ -523,3 +529,13 @@ func (m *Module) DeleteServiceAgreement(tenantId, id string) error {
 const ModelName = "service_catalog"
 
 func (m *Module) ModelName() string { return ModelName }
+
+// checkPrice: un servicio activo necesita un precio mayor que cero; uno inactivo puede esperar su precio en 0.
+//
+// Ejemplo: err := checkPrice(Service{IsActive: true, Price: 0}) // ErrActiveNeedsPrice
+func checkPrice(item Service) error {
+	if item.IsActive && item.Price <= 0 {
+		return &model.FieldError{Field: "price", Err: ErrActiveNeedsPrice}
+	}
+	return nil
+}

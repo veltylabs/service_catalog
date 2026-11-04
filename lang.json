@@ -1,9 +1,7 @@
 {
   "languages": ["es", "zh", "hi", "ar", "pt", "fr", "de", "ru"],
   "keys": {
-    "Code": ["Código", "", "", "", "", "", "", ""],
     "Currency": ["Moneda", "", "", "", "", "", "", ""],
-    "Description": ["Descripción", "", "", "", "", "", "", ""],
     "Each service the clinic offers, with its specialty, price and tax treatment. Pick one in the list to edit it, or press + to add a new one.": ["Cada servicio que ofrece la clínica, con su especialidad, precio y tratamiento tributario. Elige uno en la lista para editarlo, o presiona + para agregar uno nuevo.", "", "", "", "", "", "", ""],
     "Especialidades": ["Especialidades", "", "", "", "", "", "", ""],
     "Exempt": ["Exento", "", "", "", "", "", "", ""],
@@ -25,8 +23,7 @@
     "Taxed": ["Afecto", "", "", "", "", "", "", ""],
     "The services the clinic offers and the specialties that group them. Start with the specialties, then add each service with its price.": ["Los servicios que ofrece la clínica y las especialidades que los agrupan. Empieza por las especialidades y luego agrega cada servicio con su precio.", "", "", "", "", "", "", ""],
     "Two letters every service code (SKU) of this specialty starts with, e.g. MD for MD001.": ["Dos letras con que empieza el código (SKU) de cada servicio de esta especialidad; por ejemplo MD para MD001.", "", "", "", "", "", "", ""],
-    "Type": ["Tipo", "", "", "", "", "", "", ""],
-    "description": ["descripción", "", "", "", "", "", "", ""],
+    "an active service needs a price — set the price, or leave the service inactive until it has one": ["un servicio activo necesita precio — ponle el precio, o déjalo inactivo hasta que lo tenga", "", "", "", "", "", "", ""],
     "insurer": ["aseguradora", "", "", "", "", "", "", ""],
     "invalid item type: %s": ["tipo de ítem inválido: %s", "", "", "", "", "", "", ""],
     "invalid tax treatment": ["tratamiento tributario inválido", "", "", "", "", "", "", ""],
