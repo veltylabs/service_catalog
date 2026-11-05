@@ -7,11 +7,10 @@ import (
 	"webtyp.com/model"
 
 	servicecatalog "github.com/veltylabs/service_catalog"
-	"github.com/veltylabs/service_catalog/migrate"
 )
 
-// server es lo que el módulo aporta al servidor: sus tablas y cómo se construye.
-var server = appkit.ModuleServer{Migrate: migrate.Migrate, Build: build}
+// server es lo que el módulo aporta al servidor: cómo se construye.
+var server = appkit.ModuleServer{Build: build}
 
 // En el servidor el módulo no aporta pantallas.
 var browser appkit.ModuleBrowser
