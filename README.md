@@ -74,7 +74,7 @@ service, _ := module.CreateService(servicecatalog.Service{
 
 Este módulo contiene su propio componente UI (`ui/`) y datos semilla (`seed/`).
 
-- **`ui/`**: Exporta `ID` (`catalog_item`), `Label` (`Catálogo`), y `Screens(caller)`. La especialidad se configura como un `view.Lookup`; sin selector junto al título. Cada pantalla lleva una descripción de sí misma a través de opciones como `view.WithDescription`.
+- **`ui/`**: Exporta `ID` (`catalog_item`), `Label` (`Catálogo`), y `Screens(caller)`. La especialidad se configura como un `view.Lookup`; sin selector junto al título. Cada pantalla lleva una descripción de sí misma a través de opciones como `view.WithDescription`. Las listas se cargan según declara su `view.Page` y se buscan en el servidor.
 - **`seed/`**: Exporta `seed.Load(module, tenantID)`, poblando 3 especialidades canónicas y 1 servicio en cada una.
 
 ## Archivos Clave

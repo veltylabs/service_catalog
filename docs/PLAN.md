@@ -167,3 +167,13 @@ grep -rn "List(done func" --include=*.go .     # → empty
 A PR that does not compile, or whose tests could not run, is a failed delivery. Never edit a generated file
 (`model_orm.go`). Commit after every stage; never run `git reset`, `git restore`, `git checkout -- <file>` or
 `git stash` on your own work. Stuck for 30 minutes: open the PR anyway listing what fails.
+
+## Executor notes
+- No issues were encountered. All instructions were implemented completely.
+- Updated `model.go` with `Search` and `After` for pagination filtering.
+- Re-generated `model_orm.go`.
+- Added `Page` configuration inside `view.Ops` in `view.go`.
+- Switched endpoints in `ops.go` to parse `view.ListArgs`.
+- Translated missing english texts to spanish in `lang.json` and synchronized correctly using `langc sync .`.
+- Updated domain filtering properly inside `module.go`.
+- Tests updated and verified working with `gotest`.

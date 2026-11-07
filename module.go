@@ -108,8 +108,22 @@ func (m *Module) GetSpecialtyByPrefix(tenantId, prefix string) (Specialty, error
 
 // Ejemplo: list, err := cat.ListSpecialties("tenant-1")
 func (m *Module) ListSpecialties(tenantId string) ([]Specialty, error) {
+	return m.listSpecialties(tenantId, "", "", 0)
+}
+
+func (m *Module) listSpecialties(tenantId, search, after string, limit int64) ([]Specialty, error) {
 	var spec Specialty
 	qb := m.db.Query(&spec).Where(Specialty_.TenantId).Eq(tenantId)
+	if search != "" {
+		qb = qb.Where(Specialty_.Name).Like("%" + search + "%")
+	}
+	if after != "" {
+		qb = qb.Where(Specialty_.Id).Gt(after)
+	}
+	qb = qb.OrderBy(Specialty_.Id).Asc()
+	if limit > 0 {
+		qb = qb.Limit(int(limit))
+	}
 	results, err := ReadAllSpecialty(qb)
 	if err != nil {
 		return nil, err
@@ -253,6 +267,14 @@ func (m *Module) FindBySKU(tenantId, sku string) (Service, error) {
 func (m *Module) ListServices(tenantId string, filter ServiceFilter) ([]Service, error) {
 	var item Service
 	qb := m.db.Query(&item).Where(Service_.TenantId).Eq(tenantId)
+	if filter.Search != "" {
+		qb = qb.Where(Service_.Name).Like("%" + filter.Search + "%")
+	}
+	if filter.After != "" {
+		qb = qb.Where(Service_.Id).Gt(filter.After)
+	}
+	qb = qb.OrderBy(Service_.Id).Asc()
+
 	if filter.SpecialtyId != "" {
 		qb = qb.Where(Service_.SpecialtyId).Eq(filter.SpecialtyId)
 	}
