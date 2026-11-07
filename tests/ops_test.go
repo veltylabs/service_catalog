@@ -5,6 +5,7 @@ import (
 
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/json"
+	"webtyp.com/view"
 	"webtyp.com/model"
 	"webtyp.com/orm"
 	"webtyp.com/router"
@@ -69,7 +70,7 @@ func TestOperations(t *testing.T) {
 	}
 
 	// List Specialties via OP
-	listSpecArgs := servicecatalog.ListSpecialtiesArgs{}
+	listSpecArgs := view.ListArgs{Limit: 10}
 	var listSpecBytes []byte
 	_ = json.Encode(&listSpecArgs, &listSpecBytes)
 
@@ -205,11 +206,8 @@ func TestOperations(t *testing.T) {
 	}
 
 	// 6. List items via OP
-	listArgs := servicecatalog.ListServicesArgs{
-		SpecialtyId: createdSpec.Id,
-		ActiveOnly:  true,
+	listArgs := view.ListArgs{
 		Limit:       10,
-		Offset:      0,
 	}
 	var listBytes []byte
 	_ = json.Encode(&listArgs, &listBytes)

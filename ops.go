@@ -4,6 +4,7 @@ import (
 	"webtyp.com/model"
 	"webtyp.com/router"
 	"webtyp.com/rpc"
+	"webtyp.com/view"
 )
 
 // Nombres de las operaciones, tal como las ven el transporte y la vista: "<ModelName>.<name>".
@@ -168,12 +169,12 @@ func (a *UpdateServiceArgs) DecodeFields(r model.FieldReader) {
 }
 
 func (m *Module) MountOperations(reg router.OperationRegistry) {
-	reg.Operation(OpListSpecialties, m.opListSpecialties).Requires(model.ResourceOf(&SpecialtyModel), model.Read).Accepts(&ListSpecialtiesArgs{})
+	reg.Operation(OpListSpecialties, m.opListSpecialties).Requires(model.ResourceOf(&SpecialtyModel), model.Read).Accepts(&view.ListArgs{})
 	reg.Operation(OpGetSpecialty, m.opGetSpecialty).Requires(model.ResourceOf(&SpecialtyModel), model.Read).Accepts(&GetSpecialtyArgs{})
 	reg.Operation(OpUpsertSpecialty, m.opUpsertSpecialty).Requires(model.ResourceOf(&SpecialtyModel), model.Create|model.Update).Accepts(&UpsertSpecialtyArgs{})
 	reg.Operation(OpDeleteSpecialty, m.opDeleteSpecialty).Requires(model.ResourceOf(&SpecialtyModel), model.Delete).Accepts(&DeleteSpecialtiesArgs{})
 
-	reg.Operation(OpListServices, m.opListServices).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&ListServicesArgs{})
+	reg.Operation(OpListServices, m.opListServices).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&view.ListArgs{})
 	reg.Operation(OpGetService, m.opGetService).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&GetServiceArgs{})
 	reg.Operation(OpFindServiceBySKU, m.opFindServiceBySKU).Requires(model.ResourceOf(&ServiceModel), model.Read).Accepts(&FindServiceBySKUArgs{})
 	reg.Operation(OpCreateService, m.opCreateService).Requires(model.ResourceOf(&ServiceModel), model.Create).Accepts(&Service{})
@@ -196,12 +197,12 @@ func (m *Module) MountOperations(reg router.OperationRegistry) {
 var _ router.OperationModule = (*Module)(nil)
 
 func (m *Module) opListSpecialties(ctx router.Context) {
-	var args ListSpecialtiesArgs
+	var args view.ListArgs
 	if err := ctx.Decode(&args); err != nil {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	list, err := m.ListSpecialties(m.tenantID)
+	list, err := m.listSpecialties(m.tenantID, args.Search, args.After, view.Cap(args.Limit))
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return
@@ -276,12 +277,12 @@ func (m *Module) opDeleteSpecialty(ctx router.Context) {
 }
 
 func (m *Module) opListServices(ctx router.Context) {
-	var args ListServicesArgs
+	var args view.ListArgs
 	if err := ctx.Decode(&args); err != nil {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	filter := ServiceFilter{SpecialtyId: args.SpecialtyId, ActiveOnly: args.ActiveOnly, Limit: args.Limit, Offset: args.Offset}
+	filter := ServiceFilter{Search: args.Search, After: args.After, Limit: int64(view.Cap(args.Limit))}
 	items, err := m.ListServices(m.tenantID, filter)
 	if err != nil {
 		rpc.WriteError(ctx, err)

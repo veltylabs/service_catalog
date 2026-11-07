@@ -121,6 +121,8 @@ var ServiceFilterModel = model.Definition{
 		{Name: "active_only", Type: model.Bool()},
 		{Name: "limit", Type: model.Int()},
 		{Name: "offset", Type: model.Int()},
+		{Name: "search", Type: model.Text()},
+		{Name: "after", Type: model.Text()},
 	},
 }
 

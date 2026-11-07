@@ -17,7 +17,7 @@ El módulo `service-catalog` gestiona el catálogo de servicios y sus especialid
     - `router.OpModule` (`ModelName()` + `MountOps(reg router.OpRegistry)`) para el transporte — el módulo nunca ve `router.Router`/`router.APIModule`, y nunca importa `tinywasm/mcp`.
     - `model.IDGenerator` para la identidad (`Deps.IDs`, requerido — el módulo nunca construye el suyo propio).
     - `events.Publisher` para actualizaciones controladas por eventos (`Deps.Publisher`, opcional — `nil` desactiva la publicación silenciosamente).
-    - `view.Presenter` (`NewView(caller router.Caller) view.Presenter`, `NewSpecialtyView(caller router.Caller) view.Presenter`) para UI, construido solo con `view`+`model`+`router` — la aplicación elige el renderizador. La especialidad es un campo de formulario cargado con `SetOptions`; sin selector junto al título.
+    - `view.Presenter` (`NewView(caller router.Caller) view.Presenter`, `NewSpecialtyView(caller router.Caller) view.Presenter`) para UI, construido solo con `view`+`model`+`router` — la aplicación elige el renderizador. La especialidad es un campo de formulario cargado con `SetOptions`; sin selector junto al título. Las listas se cargan según declara su `view.Page` y se buscan en el servidor.
     - Las pruebas se ejecutan contra `storage/mem`, nunca `tinywasm/sqlite`.
 - **Multi-inquilino**: Toda especialidad, servicio y convenio está asociado con un `tenant_id`. La unicidad de SKU y prefijo se imponen por inquilino.
 - **Monedas Aceptadas**: `Deps.Currencies` establece las monedas que acepta el módulo (ISO 4217). Si está vacío, por defecto es CLP.
