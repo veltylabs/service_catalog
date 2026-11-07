@@ -2,8 +2,10 @@
 PLAN: "feat!: paged lists searched on the server (view v0.6.64)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 12217729146316332071
+PR: https://github.com/veltylabs/service_catalog/pull/25
+REVIEWED_COMMIT: 2b64cb802cd40e6fbe03f8e870b3d6f3ff18244d
 ---
 
 > Read AGENTS.md at the repo root before any change.
