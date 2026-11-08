@@ -2,6 +2,8 @@
 PLAN: "refactor!: service_catalog on the closed crud contract — server tenant, transactional batch, single declarative validation, view.go browser-only"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 3199782381933916853
 ---
 
 > Read AGENTS.md at the repo root before any change.
