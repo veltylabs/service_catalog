@@ -12,11 +12,11 @@ func TestSentinelErrorTexts(t *testing.T) {
 		err  error
 		text string
 	}{
-		{servicecatalog.ErrNotFound, "service not found"},
-		{servicecatalog.ErrAlreadyExists, "service already exists"},
-		{servicecatalog.ErrSpecialtyNotFound, "specialty not found"},
-		{servicecatalog.ErrSpecialtyInUse, "specialty in use"},
-		{servicecatalog.ErrSpecialtyPrefixExists, "specialty prefix already exists"},
+		{servicecatalog.ErrNotFound, "servicio_no_encontrado"},
+		{servicecatalog.ErrAlreadyExists, "servicio_duplicado"},
+		{servicecatalog.ErrSpecialtyNotFound, "especialidad_no_encontrada"},
+		{servicecatalog.ErrSpecialtyInUse, "especialidad en uso"},
+		{servicecatalog.ErrSpecialtyPrefixExists, "prefijo_duplicado"},
 	}
 
 	for _, c := range cases {
@@ -38,9 +38,7 @@ func TestSentinelErrorKinds(t *testing.T) {
 		{servicecatalog.ErrSpecialtyPrefixExists, model.ErrorConflict},
 		{servicecatalog.ErrSupplyLineExists, model.ErrorConflict},
 		{servicecatalog.ErrSpecialtyInUse, model.ErrorInvalid},
-		{servicecatalog.ErrNoRecords, model.ErrorInvalid},
-		{servicecatalog.ErrNoIds, model.ErrorInvalid},
-		{servicecatalog.ErrQuantity, model.ErrorInvalid},
+						{servicecatalog.ErrQuantity, model.ErrorInvalid},
 		{servicecatalog.ErrUnsupportedCurrency, model.ErrorInvalid},
 		{servicecatalog.ErrCannotRead, model.ErrorInvalid},
 	}

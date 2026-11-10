@@ -15,8 +15,8 @@ const titleSpecialties = "Especialidades"
 // Ejemplo: pres := servicecatalog.NewView(caller, view.WithDescription("Ayuda..."))
 func NewView(caller router.Caller, opts ...view.Option) view.Presenter {
 	b := view.NewCallerLister(view.NewRecords().Caller(caller),
-		view.Ops{Module: ModelName, List: OpListServices, Save: OpUpsertService, Update: OpUpdateService, Delete: OpDeleteService, Page: view.Page{First: view.All}},
-		func() model.ModelSlice { return &ServiceList{} })
+		view.Ops{Module: ModelName, Page: view.Page{First: view.All}},
+		func() model.TableSlice { return &ServiceList{} })
 	allOpts := append([]view.Option{view.WithTitle(titleCatalog)}, opts...)
 	return view.New(b, &Service{}, allOpts...)
 }
@@ -25,8 +25,8 @@ func NewView(caller router.Caller, opts ...view.Option) view.Presenter {
 // Ejemplo: pres := servicecatalog.NewSpecialtyView(caller, view.WithDescription("Ayuda..."))
 func NewSpecialtyView(caller router.Caller, opts ...view.Option) view.Presenter {
 	b := view.NewCallerLister(view.NewRecords().Caller(caller),
-		view.Ops{Module: ModelName, List: OpListSpecialties, Save: OpUpsertSpecialty, Delete: OpDeleteSpecialty, Page: view.Page{First: view.All}},
-		func() model.ModelSlice { return &SpecialtyList{} })
+		view.Ops{Module: ModelName, Page: view.Page{First: view.All}},
+		func() model.TableSlice { return &SpecialtyList{} })
 	allOpts := append([]view.Option{view.WithTitle(titleSpecialties)}, opts...)
 	return view.New(b, &Specialty{}, allOpts...)
 }

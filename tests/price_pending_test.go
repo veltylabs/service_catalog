@@ -3,50 +3,54 @@ package tests
 import (
 	"errors"
 	"testing"
-
-	servicecatalog "github.com/veltylabs/service_catalog"
+	"webtyp.com/crud"
 	"webtyp.com/model"
-	"webtyp.com/orm"
-	"webtyp.com/storage/mem"
+	"webtyp.com/router"
+	servicecatalog "github.com/veltylabs/service_catalog"
 )
 
 // needsPrice: el error marca el campo price y su causa es ErrActiveNeedsPrice.
 func needsPrice(err error) bool {
 	var fe *model.FieldError
-	return errors.As(err, &fe) && fe.Field == "price" && fe.Err == servicecatalog.ErrActiveNeedsPrice
+	return errors.As(err, &fe) && fe.Field == "price" && fe.Err.Error() == "servicio activo necesita precio"
 }
 
 // Un servicio sin precio todavía (0) se puede guardar inactivo; activo necesita precio.
 func TestPricePending(t *testing.T) {
-	m, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{TenantID: "t1", IDs: &MockIDGen{}})
+	_, broker, m := buildModule(t, "t1")
+	c := crud.LoopbackActingAs(broker, "u1", m)
+
+	var spec servicecatalog.Specialty
+	var err error
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "specialty", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.Specialty{Prefix: "md", Name: "Medicina General"}}}, &spec, func(e error){ err = e })
 	if err != nil {
 		t.Fatal(err)
 	}
-	spec, err := m.UpsertSpecialty(servicecatalog.Specialty{TenantId: "t1", Prefix: "md", Name: "Medicina General"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	base := servicecatalog.Service{TenantId: "t1", SpecialtyId: spec.Id, Sku: "mdcong", Name: "Consulta general",
-		Currency: servicecatalog.CurrencyCLP, TaxTreatment: servicecatalog.TaxExempt}
+
+	base := servicecatalog.Service{SpecialtyId: spec.Id, Sku: "mdcong", Name: "Consulta general", Currency: servicecatalog.CurrencyCLP, TaxTreatment: servicecatalog.TaxExempt}
 
 	active := base
 	active.IsActive = true
-	if _, err := m.CreateService(active); !needsPrice(err) {
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&active}}, &active, func(e error){ err = e })
+	if err == nil || err.Error() != "loopback: 400 servicio activo necesita precio" {
 		t.Fatalf("active with price 0: err = %v, want ErrActiveNeedsPrice", err)
 	}
 
-	svc, err := m.CreateService(base)
+	var svc servicecatalog.Service
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&base}}, &svc, func(e error){ err = e })
 	if err != nil {
 		t.Fatalf("inactive with price 0 must be saved: %v", err)
 	}
 
 	svc.IsActive = true
-	if _, err := m.UpdateService(svc); !needsPrice(err) {
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service", Action: model.Update}, &crud.UpdateArgs{Record: &svc, Fields: []string{"is_active"}, IDs: []string{svc.Id}}, &svc, func(e error){ err = e })
+	if err == nil || err.Error() != "loopback: 400 servicio activo necesita precio" {
 		t.Fatalf("activating without price: err = %v, want ErrActiveNeedsPrice", err)
 	}
 
 	svc.Price = 30000
-	if _, err := m.UpdateService(svc); err != nil {
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service", Action: model.Update}, &crud.UpdateArgs{Record: &svc, Fields: []string{"price", "is_active"}, IDs: []string{svc.Id}}, &svc, func(e error){ err = e })
+	if err != nil {
 		t.Fatalf("activating with price: %v", err)
 	}
 }

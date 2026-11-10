@@ -1,92 +1,92 @@
-# service-catalog
+# service_catalog
 <img src="docs/img/badges.svg">
 
-Catálogo de los **servicios** que ofrece una empresa y las **especialidades** que los clasifican. Diseñado para el ecosistema Velty.
-Los productos y suministros son otros módulos (`pharmacy_manager`, `supply_manager`).
+## ¿Por qué existe?
 
-*Nota:* `Deps.TenantID` es obligatorio; las operaciones nunca leen el tenant de la petición; los permisos se nombran con `model.ResourceOf(&Tabla)`.
+`service_catalog` es el catálogo de servicios y especialidades de una clínica o centro de salud. Lo encuentras cuando otro
+módulo, como `appointment_booking`, necesita saber qué servicios se ofrecen, a qué precio y con qué insumos.
 
-## Inicio Rápido
+- **Sin esto:** cada módulo guarda su propia lista de servicios y los precios se desincronizan.
+- **Con esto:** hay una sola fuente de verdad; la persistencia y el transporte los hace [`crud`](https://github.com/webtyp/crud)
+  y las reglas del negocio (SKU único, precio pendiente, especialidad en uso) viven en los archivos `rule_*.go`
+  ([arquitectura](docs/ARCHITECTURE.md)).
 
-Las tablas se crean y migran usando `ddl.Sync` (flujo de sincronización: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md).
+## Antes de comenzar
+
+- Go instalado y acceso a los módulos `webtyp.com/*` (`GOPRIVATE=webtyp.com/*,github.com/veltylabs/*`).
+- Una base de datos conectada como `*orm.DB`; las tablas las crea [`migrate.Migrate`](migrate/).
+- Un generador de ids (`model.IDGenerator`), por ejemplo `webtyp.com/unixid`, y el id del inquilino (`TenantID`).
+
+## Guía paso a paso
+
+### Paso 1: crear el módulo
+
+**Objetivo:** conectar el catálogo a una base en memoria.
 
 ```go
+package main
+
 import (
+	servicecatalog "github.com/veltylabs/service_catalog"
+	"webtyp.com/fmt"
 	"webtyp.com/orm"
 	"webtyp.com/storage/mem"
-	servicecatalog "github.com/veltylabs/service_catalog"
+	"webtyp.com/unixid"
 )
 
-// En una aplicación real, inyecta la conexión a la base de datos elegida por la app compositora
-db := orm.New(mem.New())
-idGenerator := &MyIDGenerator{} // implementa model.IDGenerator
-
-module, _ := servicecatalog.New(db, servicecatalog.Deps{
-	TenantID:   "my-tenant", // es obligatorio; las operaciones nunca leen el tenant de la petición
-	IDs:        idGenerator,
-	Currencies: []string{servicecatalog.CurrencyCLP}, // Si no se indica, el catálogo acepta solo CLP
-})
-
-// Crear especialidad
-specialty, _ := module.UpsertSpecialty(servicecatalog.Specialty{
-	TenantId: "my-tenant", // A nivel de dominio se pasa el tenant (las operaciones lo sobreescriben)
-	Prefix:   "md",
-	Name:     "Medicina General",
-})
-
-// Crear un servicio
-service, _ := module.CreateService(servicecatalog.Service{
-	TenantId:    "my-tenant",
-	SpecialtyId: specialty.Id,
-	Sku:         "md0001",
-	Name:        "Consulta General",
-	Price:       100,
-	Currency:    "USD",
-	IsActive:    true,
-})
+func main() {
+	ids, err := unixid.NewUnixID()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	mod, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{IDs: ids, TenantID: "acme"})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(mod.ModelName())
+}
 ```
 
-## Operaciones
-| Nombre Op | Descripción |
-|-----------|-------------|
-| `list_specialties` | Listar especialidades para un inquilino |
-| `list_currencies` | Listar monedas aceptadas |
-| `get_specialty` | Obtener especialidad por ID |
-| `upsert_specialty` | Crear o actualizar especialidad |
-| `delete_specialty` | Eliminar especialidad |
-| `list_services` | Listar servicios para un inquilino |
-| `get_service` | Obtener servicio por ID |
-| `find_service_by_sku` | Encontrar servicio por SKU |
-| `create_service` | Crear nuevo servicio |
-| `update_service` | Actualizar servicio existente |
-| `upsert_service` | Crear o actualizar servicio |
-| `deactivate_service` | Borrado lógico de servicio |
-| `delete_service` | Borrado físico de servicio |
-| `list_agreements` | Listar convenios de facturación |
-| `upsert_agreement` | Crear o actualizar convenio |
-| `delete_agreement` | Eliminar convenio |
+**Resultado esperado:** imprime `service_catalog`.
 
-## Lectores (Inter-Módulo)
-- `ServiceExists(tenantId, serviceId string) (bool, error)`: Comprueba si un servicio existe y está activo.
-- `ServiceCard(tenantId, serviceId string) (name string, price float64, currency string, active bool, err error)`: Obtiene detalles del servicio para facturación/reservas.
+### Paso 2: operar el catálogo
 
-## Vista y demo
+**Objetivo:** crear un servicio y buscarlo por SKU.
 
-Este módulo contiene su propio componente UI (`ui/`) y datos semilla (`seed/`).
+Las operaciones son las de [`crud`](https://github.com/webtyp/crud), pedidas con `router.Operation{Module, Entity, Action}`
+(por ejemplo `service.create`). Los ejemplos completos, con sus resultados, están en [tests/catalog_test.go](tests/catalog_test.go).
 
-- **`ui/`**: Exporta `ID` (`catalog_item`), `Label` (`Catálogo`), y `Screens(caller)`. La especialidad se configura como un `view.Lookup`; sin selector junto al título. Cada pantalla lleva una descripción de sí misma a través de opciones como `view.WithDescription`. Las listas se cargan según declara su `view.Page` y se buscan en el servidor.
-- **`seed/`**: Exporta `seed.Load(module, tenantID)`, poblando 3 especialidades canónicas y 1 servicio en cada una.
+**Resultado esperado:** el servicio queda guardado; un SKU repetido se rechaza con un error en el campo `sku`.
 
-## Archivos Clave
-| Archivo | Propósito |
-|------|---------|
-| `model.go` | Estructuras de datos y esquemas |
-| `module.go` | `Deps`, `New`, los métodos de dominio y los lectores (`ServiceExists`, `ServiceCard`) |
-| `errors.go` | Constantes de error (los errores salen por `rpc.WriteError`: 400/404/409 con el texto y el campo que falló; un 500 no muestra el detalle) |
-| `ops.go` | Nombres de operaciones, las formas en red de la vista, `MountOperations` y los manejadores |
-| `recipe.go` | La receta de insumos de un servicio y su lector `ServiceRecipe` |
-| `migration.go` | Migración de prefijo SKU a especialidad |
-| `model_orm.go` | Ayudantes ORM generados |
-| `ui/` | Presentador de vista del módulo y componentes |
-| `seed/` | Cargador de datos de ejemplo para demo |
-| `tests/` | Pruebas funcionales y unitarias |
+### Paso 3: ver el catálogo en pantalla
+
+**Objetivo:** abrir la demo con datos en memoria. La demo está en [seed/demo.go](seed/demo.go) y se abre con `webtyp` en la raíz del módulo.
+
+**Resultado esperado:** una lista de servicios con búsqueda.
+
+## Operaciones: sin y con `crud`
+
+| Antes (manejadores a mano) | Después (declaración + reglas) |
+|---|---|
+| `list_specialties / get_specialty` | `specialty.read` |
+| `upsert_specialty` | `specialty.create` / `specialty.update` |
+| `delete_specialty` | `specialty.delete` |
+| `list_services / get_service` | `service.read` |
+| `find_service_by_sku` | `service.read` con filtro `{sku}` |
+| `create_service / update_service / upsert_service` | `service.create` / `service.update` |
+| `deactivate_service` | `service.update` con `["is_active"]` |
+| `delete_service` | `service.delete` |
+| `list_currencies` | modelo de lectura `CurrencyOption` |
+| `list_agreements / upsert_agreement / delete_agreement` | `service_agreement.read`, `.create`, `.update`, `.delete` |
+| `list_service_supplies / upsert_service_supply / delete_service_supply` | `service_supply.read`, `.create`, `.update`, `.delete` |
+
+## Mapa de documentación
+
+| Orden | Documento | Qué pregunta responde y cuándo leerlo |
+|---|---|---|
+| 1 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | ¿Qué entidades hay y quién decide qué? Léelo antes de tocar una regla. |
+| 2 | [docs/TESTS.md](docs/TESTS.md) | ¿Qué comportamiento está probado? Léelo antes de cambiar una regla. |
+| 3 | [docs/diagrams/database.md](docs/diagrams/database.md) | ¿Cómo se relacionan las tablas? Léelo antes de cambiar el esquema. |
+| 4 | [docs/diagrams/service_card.md](docs/diagrams/service_card.md) | ¿Cómo se ve la ficha de un servicio? Léelo antes de cambiar la pantalla. |
