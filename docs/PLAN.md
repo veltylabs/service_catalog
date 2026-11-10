@@ -2,6 +2,8 @@
 PLAN: "refactor!: service_catalog on the crud-by-declaration framework — Allow and Rules in definition.go, persistence by crud, only domain rules in rule files"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 5312780645401495885
 ---
 
 > Read AGENTS.md at the repo root before any change.
