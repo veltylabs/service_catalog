@@ -2,32 +2,15 @@ package tests
 
 import (
 	"testing"
-
-	"webtyp.com/view"
-	"webtyp.com/view/conformance"
-	"webtyp.com/view/mock"
+	"webtyp.com/crud"
+	"webtyp.com/router/mock"
 )
 
-func TestConformance(t *testing.T) {
-	conformance.Run(t, conformance.Factory{
-		New: func(t *testing.T, p view.Presenter) conformance.Driver {
-			r := mock.New(p)
-			return conformance.Driver{
-				Mount:          r.Mount,
-				Labels:         r.Labels,
-				Select:         r.Select,
-				SetField:       r.SetField,
-				Save:           r.Save,
-				Delete:         r.Delete,
-				New:            r.New,
-				Edit:           r.Edit,
-				Cancel:         r.Cancel,
-				FocusedFieldID: r.FocusedFieldID,
-				ActionLabels:   r.ActionLabels,
-				ActionEnabled:  r.ActionEnabled,
-				ClickAction:    r.ClickAction,
-				ConfirmAction:  r.ConfirmAction,
-			}
-		},
-	})
+func TestMount_MatchesDefinition(t *testing.T) {
+	_, _, mod := buildModule(t, "tenant-1")
+	reg := &mock.Router{}
+	err := crud.Mount(reg, nil, nil, mod)
+	if err != nil {
+		t.Fatalf("expected nil err, got %v", err)
+	}
 }

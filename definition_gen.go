@@ -5,6 +5,8 @@ package servicecatalog
 import (
 	"webtyp.com/model"
 	"webtyp.com/orm"
+	"webtyp.com/crud"
+	"webtyp.com/storage"
 	"webtyp.com/time"
 )
 
@@ -62,6 +64,9 @@ func (m *Specialty) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+func (*Specialty) Allow() model.Action     { return SpecialtyModel.Allow }
+func (*SpecialtyList) Allow() model.Action { return SpecialtyModel.Allow }
+
 func (m *Specialty) Item() model.Item {
 	return model.Item{ID: m.Id, Label: m.Name, Description: m.Prefix}
 }
@@ -115,13 +120,18 @@ type Service struct {
 	Currency string
 	IsActive bool
 	UpdatedAt time.Nano
+	ActiveOnly bool
+	Limit int64
+	Offset int64
+	SearchText string
+	After string
 }
 
 func (m *Service) ModelName() string { return "service" }
 
 func (m *Service) Schema() []model.Field { return ServiceModel.Fields }
 
-func (m *Service) Pointers() []any { return []any{&m.Id, &m.TenantId, &m.SpecialtyId, &m.Sku, &m.Name, &m.Description, &m.TaxTreatment, &m.Price, &m.Currency, &m.IsActive, (*int64)(&m.UpdatedAt)} }
+func (m *Service) Pointers() []any { return []any{&m.Id, &m.TenantId, &m.SpecialtyId, &m.Sku, &m.Name, &m.Description, &m.TaxTreatment, &m.Price, &m.Currency, &m.IsActive, (*int64)(&m.UpdatedAt), &m.ActiveOnly, &m.Limit, &m.Offset, &m.SearchText, &m.After} }
 
 func (m *Service) IsNil() bool { return m == nil }
 
@@ -137,6 +147,11 @@ func (m *Service) EncodeFields(w model.FieldWriter) {
 	w.String("currency", m.Currency)
 	w.Bool("is_active", m.IsActive)
 	if m.UpdatedAt != 0 { w.Int("updated_at", int64(m.UpdatedAt)) }
+	if m.ActiveOnly { w.Bool("active_only", m.ActiveOnly) }
+	if m.Limit != 0 { w.Int("limit", m.Limit) }
+	if m.Offset != 0 { w.Int("offset", m.Offset) }
+	if m.SearchText != "" { w.String("search_text", m.SearchText) }
+	if m.After != "" { w.String("after", m.After) }
 }
 
 func (m *Service) DecodeFields(r model.FieldReader) {
@@ -151,6 +166,11 @@ func (m *Service) DecodeFields(r model.FieldReader) {
 	if v, ok := r.String("currency"); ok { m.Currency = v }
 	if v, ok := r.Bool("is_active"); ok { m.IsActive = v }
 	if v, ok := r.Int("updated_at"); ok { m.UpdatedAt = time.Nano(v) }
+	if v, ok := r.Bool("active_only"); ok { m.ActiveOnly = v }
+	if v, ok := r.Int("limit"); ok { m.Limit = v }
+	if v, ok := r.Int("offset"); ok { m.Offset = v }
+	if v, ok := r.String("search_text"); ok { m.SearchText = v }
+	if v, ok := r.String("after"); ok { m.After = v }
 }
 
 type ServiceList []*Service
@@ -165,6 +185,9 @@ func (s *ServiceList) DecodeFields(_ model.FieldReader) {}
 func (m *Service) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
+
+func (*Service) Allow() model.Action     { return ServiceModel.Allow }
+func (*ServiceList) Allow() model.Action { return ServiceModel.Allow }
 
 func (m *Service) Item() model.Item {
 	return model.Item{ID: m.Id, Label: m.Name, Description: m.Sku}
@@ -182,6 +205,11 @@ var Service_ = struct {
 	Currency string
 	IsActive string
 	UpdatedAt string
+	ActiveOnly string
+	Limit string
+	Offset string
+	SearchText string
+	After string
 }{
 	Id: "id",
 	TenantId: "tenant_id",
@@ -194,6 +222,11 @@ var Service_ = struct {
 	Currency: "currency",
 	IsActive: "is_active",
 	UpdatedAt: "updated_at",
+	ActiveOnly: "active_only",
+	Limit: "limit",
+	Offset: "offset",
+	SearchText: "search_text",
+	After: "after",
 }
 
 func ReadOneService(qb *orm.QB, model *Service) (*Service, error) {
@@ -272,6 +305,9 @@ func (s *ServiceAgreementList) DecodeFields(_ model.FieldReader) {}
 func (m *ServiceAgreement) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
+
+func (*ServiceAgreement) Allow() model.Action     { return ServiceAgreementModel.Allow }
+func (*ServiceAgreementList) Allow() model.Action { return ServiceAgreementModel.Allow }
 
 var ServiceAgreement_ = struct {
 	Id string
@@ -364,6 +400,9 @@ func (m *ServiceSupply) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+func (*ServiceSupply) Allow() model.Action     { return ServiceSupplyModel.Allow }
+func (*ServiceSupplyList) Allow() model.Action { return ServiceSupplyModel.Allow }
+
 var ServiceSupply_ = struct {
 	Id string
 	TenantId string
@@ -403,360 +442,6 @@ func (m *ServiceSupply) SchemaExt() []model.FieldExt {
 	}
 }
 
-type ListServiceSuppliesArgs struct {
-	ServiceId string
-}
-
-func (m *ListServiceSuppliesArgs) ModelName() string { return "list_service_supplies_args" }
-
-func (m *ListServiceSuppliesArgs) Schema() []model.Field { return ListServiceSuppliesArgsModel.Fields }
-
-func (m *ListServiceSuppliesArgs) Pointers() []any { return []any{&m.ServiceId} }
-
-func (m *ListServiceSuppliesArgs) IsNil() bool { return m == nil }
-
-func (m *ListServiceSuppliesArgs) EncodeFields(w model.FieldWriter) {
-	w.String("service_id", m.ServiceId)
-}
-
-func (m *ListServiceSuppliesArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("service_id"); ok { m.ServiceId = v }
-}
-
-type ListServiceSuppliesArgsList []*ListServiceSuppliesArgs
-
-func (s *ListServiceSuppliesArgsList) Len() int             { return len(*s) }
-func (s *ListServiceSuppliesArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListServiceSuppliesArgsList) Append() model.Fielder  { v := &ListServiceSuppliesArgs{}; *s = append(*s, v); return v }
-func (s *ListServiceSuppliesArgsList) IsNil() bool          { return s == nil }
-func (s *ListServiceSuppliesArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *ListServiceSuppliesArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *ListServiceSuppliesArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type DeleteServiceSupplyArgs struct {
-	Id string
-}
-
-func (m *DeleteServiceSupplyArgs) ModelName() string { return "delete_service_supply_args" }
-
-func (m *DeleteServiceSupplyArgs) Schema() []model.Field { return DeleteServiceSupplyArgsModel.Fields }
-
-func (m *DeleteServiceSupplyArgs) Pointers() []any { return []any{&m.Id} }
-
-func (m *DeleteServiceSupplyArgs) IsNil() bool { return m == nil }
-
-func (m *DeleteServiceSupplyArgs) EncodeFields(w model.FieldWriter) {
-	w.String("id", m.Id)
-}
-
-func (m *DeleteServiceSupplyArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok { m.Id = v }
-}
-
-type DeleteServiceSupplyArgsList []*DeleteServiceSupplyArgs
-
-func (s *DeleteServiceSupplyArgsList) Len() int             { return len(*s) }
-func (s *DeleteServiceSupplyArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *DeleteServiceSupplyArgsList) Append() model.Fielder  { v := &DeleteServiceSupplyArgs{}; *s = append(*s, v); return v }
-func (s *DeleteServiceSupplyArgsList) IsNil() bool          { return s == nil }
-func (s *DeleteServiceSupplyArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *DeleteServiceSupplyArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *DeleteServiceSupplyArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type ServiceFilter struct {
-	SpecialtyId string
-	ActiveOnly bool
-	Limit int64
-	Offset int64
-	Search string
-	After string
-}
-
-func (m *ServiceFilter) ModelName() string { return "item_filter" }
-
-func (m *ServiceFilter) Schema() []model.Field { return ServiceFilterModel.Fields }
-
-func (m *ServiceFilter) Pointers() []any { return []any{&m.SpecialtyId, &m.ActiveOnly, &m.Limit, &m.Offset, &m.Search, &m.After} }
-
-func (m *ServiceFilter) IsNil() bool { return m == nil }
-
-func (m *ServiceFilter) EncodeFields(w model.FieldWriter) {
-	w.String("specialty_id", m.SpecialtyId)
-	w.Bool("active_only", m.ActiveOnly)
-	w.Int("limit", m.Limit)
-	w.Int("offset", m.Offset)
-	w.String("search", m.Search)
-	w.String("after", m.After)
-}
-
-func (m *ServiceFilter) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("specialty_id"); ok { m.SpecialtyId = v }
-	if v, ok := r.Bool("active_only"); ok { m.ActiveOnly = v }
-	if v, ok := r.Int("limit"); ok { m.Limit = v }
-	if v, ok := r.Int("offset"); ok { m.Offset = v }
-	if v, ok := r.String("search"); ok { m.Search = v }
-	if v, ok := r.String("after"); ok { m.After = v }
-}
-
-type ServiceFilterList []*ServiceFilter
-
-func (s *ServiceFilterList) Len() int             { return len(*s) }
-func (s *ServiceFilterList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ServiceFilterList) Append() model.Fielder  { v := &ServiceFilter{}; *s = append(*s, v); return v }
-func (s *ServiceFilterList) IsNil() bool          { return s == nil }
-func (s *ServiceFilterList) EncodeFields(_ model.FieldWriter) {}
-func (s *ServiceFilterList) DecodeFields(_ model.FieldReader) {}
-
-func (m *ServiceFilter) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type ListServicesArgs struct {
-	SpecialtyId string
-	ActiveOnly bool
-	Limit int64
-	Offset int64
-}
-
-func (m *ListServicesArgs) ModelName() string { return "list_services_args" }
-
-func (m *ListServicesArgs) Schema() []model.Field { return ListServicesArgsModel.Fields }
-
-func (m *ListServicesArgs) Pointers() []any { return []any{&m.SpecialtyId, &m.ActiveOnly, &m.Limit, &m.Offset} }
-
-func (m *ListServicesArgs) IsNil() bool { return m == nil }
-
-func (m *ListServicesArgs) EncodeFields(w model.FieldWriter) {
-	w.String("specialty_id", m.SpecialtyId)
-	w.Bool("active_only", m.ActiveOnly)
-	w.Int("limit", m.Limit)
-	w.Int("offset", m.Offset)
-}
-
-func (m *ListServicesArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("specialty_id"); ok { m.SpecialtyId = v }
-	if v, ok := r.Bool("active_only"); ok { m.ActiveOnly = v }
-	if v, ok := r.Int("limit"); ok { m.Limit = v }
-	if v, ok := r.Int("offset"); ok { m.Offset = v }
-}
-
-type ListServicesArgsList []*ListServicesArgs
-
-func (s *ListServicesArgsList) Len() int             { return len(*s) }
-func (s *ListServicesArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListServicesArgsList) Append() model.Fielder  { v := &ListServicesArgs{}; *s = append(*s, v); return v }
-func (s *ListServicesArgsList) IsNil() bool          { return s == nil }
-func (s *ListServicesArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *ListServicesArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *ListServicesArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type GetServiceArgs struct {
-	Id string
-}
-
-func (m *GetServiceArgs) ModelName() string { return "get_item_args" }
-
-func (m *GetServiceArgs) Schema() []model.Field { return GetServiceArgsModel.Fields }
-
-func (m *GetServiceArgs) Pointers() []any { return []any{&m.Id} }
-
-func (m *GetServiceArgs) IsNil() bool { return m == nil }
-
-func (m *GetServiceArgs) EncodeFields(w model.FieldWriter) {
-	w.String("id", m.Id)
-}
-
-func (m *GetServiceArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok { m.Id = v }
-}
-
-type GetServiceArgsList []*GetServiceArgs
-
-func (s *GetServiceArgsList) Len() int             { return len(*s) }
-func (s *GetServiceArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *GetServiceArgsList) Append() model.Fielder  { v := &GetServiceArgs{}; *s = append(*s, v); return v }
-func (s *GetServiceArgsList) IsNil() bool          { return s == nil }
-func (s *GetServiceArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *GetServiceArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *GetServiceArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type FindServiceBySKUArgs struct {
-	Sku string
-}
-
-func (m *FindServiceBySKUArgs) ModelName() string { return "find_by_sku_args" }
-
-func (m *FindServiceBySKUArgs) Schema() []model.Field { return FindServiceBySKUArgsModel.Fields }
-
-func (m *FindServiceBySKUArgs) Pointers() []any { return []any{&m.Sku} }
-
-func (m *FindServiceBySKUArgs) IsNil() bool { return m == nil }
-
-func (m *FindServiceBySKUArgs) EncodeFields(w model.FieldWriter) {
-	w.String("sku", m.Sku)
-}
-
-func (m *FindServiceBySKUArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("sku"); ok { m.Sku = v }
-}
-
-type FindServiceBySKUArgsList []*FindServiceBySKUArgs
-
-func (s *FindServiceBySKUArgsList) Len() int             { return len(*s) }
-func (s *FindServiceBySKUArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *FindServiceBySKUArgsList) Append() model.Fielder  { v := &FindServiceBySKUArgs{}; *s = append(*s, v); return v }
-func (s *FindServiceBySKUArgsList) IsNil() bool          { return s == nil }
-func (s *FindServiceBySKUArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *FindServiceBySKUArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *FindServiceBySKUArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type DeactivateServiceArgs struct {
-	Id string
-}
-
-func (m *DeactivateServiceArgs) ModelName() string { return "deactivate_item_args" }
-
-func (m *DeactivateServiceArgs) Schema() []model.Field { return DeactivateServiceArgsModel.Fields }
-
-func (m *DeactivateServiceArgs) Pointers() []any { return []any{&m.Id} }
-
-func (m *DeactivateServiceArgs) IsNil() bool { return m == nil }
-
-func (m *DeactivateServiceArgs) EncodeFields(w model.FieldWriter) {
-	w.String("id", m.Id)
-}
-
-func (m *DeactivateServiceArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok { m.Id = v }
-}
-
-type DeactivateServiceArgsList []*DeactivateServiceArgs
-
-func (s *DeactivateServiceArgsList) Len() int             { return len(*s) }
-func (s *DeactivateServiceArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *DeactivateServiceArgsList) Append() model.Fielder  { v := &DeactivateServiceArgs{}; *s = append(*s, v); return v }
-func (s *DeactivateServiceArgsList) IsNil() bool          { return s == nil }
-func (s *DeactivateServiceArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *DeactivateServiceArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *DeactivateServiceArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type DeleteServiceArgs struct {
-	Id string
-}
-
-func (m *DeleteServiceArgs) ModelName() string { return "delete_item_args" }
-
-func (m *DeleteServiceArgs) Schema() []model.Field { return DeleteServiceArgsModel.Fields }
-
-func (m *DeleteServiceArgs) Pointers() []any { return []any{&m.Id} }
-
-func (m *DeleteServiceArgs) IsNil() bool { return m == nil }
-
-func (m *DeleteServiceArgs) EncodeFields(w model.FieldWriter) {
-	w.String("id", m.Id)
-}
-
-func (m *DeleteServiceArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok { m.Id = v }
-}
-
-type DeleteServiceArgsList []*DeleteServiceArgs
-
-func (s *DeleteServiceArgsList) Len() int             { return len(*s) }
-func (s *DeleteServiceArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *DeleteServiceArgsList) Append() model.Fielder  { v := &DeleteServiceArgs{}; *s = append(*s, v); return v }
-func (s *DeleteServiceArgsList) IsNil() bool          { return s == nil }
-func (s *DeleteServiceArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *DeleteServiceArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *DeleteServiceArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type ListAgreementsArgs struct {
-	ServiceId string
-}
-
-func (m *ListAgreementsArgs) ModelName() string { return "list_agreements_args" }
-
-func (m *ListAgreementsArgs) Schema() []model.Field { return ListAgreementsArgsModel.Fields }
-
-func (m *ListAgreementsArgs) Pointers() []any { return []any{&m.ServiceId} }
-
-func (m *ListAgreementsArgs) IsNil() bool { return m == nil }
-
-func (m *ListAgreementsArgs) EncodeFields(w model.FieldWriter) {
-	w.String("service_id", m.ServiceId)
-}
-
-func (m *ListAgreementsArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("service_id"); ok { m.ServiceId = v }
-}
-
-type ListAgreementsArgsList []*ListAgreementsArgs
-
-func (s *ListAgreementsArgsList) Len() int             { return len(*s) }
-func (s *ListAgreementsArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListAgreementsArgsList) Append() model.Fielder  { v := &ListAgreementsArgs{}; *s = append(*s, v); return v }
-func (s *ListAgreementsArgsList) IsNil() bool          { return s == nil }
-func (s *ListAgreementsArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *ListAgreementsArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *ListAgreementsArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type DeleteAgreementArgs struct {
-	Id string
-}
-
-func (m *DeleteAgreementArgs) ModelName() string { return "delete_agreement_args" }
-
-func (m *DeleteAgreementArgs) Schema() []model.Field { return DeleteAgreementArgsModel.Fields }
-
-func (m *DeleteAgreementArgs) Pointers() []any { return []any{&m.Id} }
-
-func (m *DeleteAgreementArgs) IsNil() bool { return m == nil }
-
-func (m *DeleteAgreementArgs) EncodeFields(w model.FieldWriter) {
-	w.String("id", m.Id)
-}
-
-func (m *DeleteAgreementArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok { m.Id = v }
-}
-
-type DeleteAgreementArgsList []*DeleteAgreementArgs
-
-func (s *DeleteAgreementArgsList) Len() int             { return len(*s) }
-func (s *DeleteAgreementArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *DeleteAgreementArgsList) Append() model.Fielder  { v := &DeleteAgreementArgs{}; *s = append(*s, v); return v }
-func (s *DeleteAgreementArgsList) IsNil() bool          { return s == nil }
-func (s *DeleteAgreementArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *DeleteAgreementArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *DeleteAgreementArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
 type CurrencyOption struct {
 	Code string
 }
@@ -790,128 +475,81 @@ func (m *CurrencyOption) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
-type ListCurrenciesArgs struct {
-}
+func (*CurrencyOption) Allow() model.Action     { return CurrencyOptionModel.Allow }
+func (*CurrencyOptionList) Allow() model.Action { return CurrencyOptionModel.Allow }
 
-func (m *ListCurrenciesArgs) ModelName() string { return "list_currencies_args" }
+// ModelName is the module identity: Definition.Name.
+const ModelName = "service_catalog"
 
-func (m *ListCurrenciesArgs) Schema() []model.Field { return ListCurrenciesArgsModel.Fields }
+func (m *Module) ModelName() string { return ModelName }
 
-func (m *ListCurrenciesArgs) Pointers() []any { return []any{} }
+// Definition is the module's declaration (definition.go); crud.Mount compares it with what MountOperations mounted.
+func (m *Module) Definition() model.ModuleDefinition { return Definition }
 
-func (m *ListCurrenciesArgs) IsNil() bool { return m == nil }
-
-func (m *ListCurrenciesArgs) EncodeFields(w model.FieldWriter) {
-}
-
-func (m *ListCurrenciesArgs) DecodeFields(r model.FieldReader) {
-}
-
-type ListCurrenciesArgsList []*ListCurrenciesArgs
-
-func (s *ListCurrenciesArgsList) Len() int             { return len(*s) }
-func (s *ListCurrenciesArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListCurrenciesArgsList) Append() model.Fielder  { v := &ListCurrenciesArgs{}; *s = append(*s, v); return v }
-func (s *ListCurrenciesArgsList) IsNil() bool          { return s == nil }
-func (s *ListCurrenciesArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *ListCurrenciesArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *ListCurrenciesArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type ListSpecialtiesArgs struct {
-}
-
-func (m *ListSpecialtiesArgs) ModelName() string { return "list_specialties_args" }
-
-func (m *ListSpecialtiesArgs) Schema() []model.Field { return ListSpecialtiesArgsModel.Fields }
-
-func (m *ListSpecialtiesArgs) Pointers() []any { return []any{} }
-
-func (m *ListSpecialtiesArgs) IsNil() bool { return m == nil }
-
-func (m *ListSpecialtiesArgs) EncodeFields(w model.FieldWriter) {
-}
-
-func (m *ListSpecialtiesArgs) DecodeFields(r model.FieldReader) {
-}
-
-type ListSpecialtiesArgsList []*ListSpecialtiesArgs
-
-func (s *ListSpecialtiesArgsList) Len() int             { return len(*s) }
-func (s *ListSpecialtiesArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListSpecialtiesArgsList) Append() model.Fielder  { v := &ListSpecialtiesArgs{}; *s = append(*s, v); return v }
-func (s *ListSpecialtiesArgsList) IsNil() bool          { return s == nil }
-func (s *ListSpecialtiesArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *ListSpecialtiesArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *ListSpecialtiesArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type GetSpecialtyArgs struct {
-	Id string
-}
-
-func (m *GetSpecialtyArgs) ModelName() string { return "get_specialty_args" }
-
-func (m *GetSpecialtyArgs) Schema() []model.Field { return GetSpecialtyArgsModel.Fields }
-
-func (m *GetSpecialtyArgs) Pointers() []any { return []any{&m.Id} }
-
-func (m *GetSpecialtyArgs) IsNil() bool { return m == nil }
-
-func (m *GetSpecialtyArgs) EncodeFields(w model.FieldWriter) {
-	w.String("id", m.Id)
-}
-
-func (m *GetSpecialtyArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok { m.Id = v }
-}
-
-type GetSpecialtyArgsList []*GetSpecialtyArgs
-
-func (s *GetSpecialtyArgsList) Len() int             { return len(*s) }
-func (s *GetSpecialtyArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *GetSpecialtyArgsList) Append() model.Fielder  { v := &GetSpecialtyArgs{}; *s = append(*s, v); return v }
-func (s *GetSpecialtyArgsList) IsNil() bool          { return s == nil }
-func (s *GetSpecialtyArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *GetSpecialtyArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *GetSpecialtyArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type DeleteSpecialtyArgs struct {
-	Id string
-}
-
-func (m *DeleteSpecialtyArgs) ModelName() string { return "delete_specialty_args" }
-
-func (m *DeleteSpecialtyArgs) Schema() []model.Field { return DeleteSpecialtyArgsModel.Fields }
-
-func (m *DeleteSpecialtyArgs) Pointers() []any { return []any{&m.Id} }
-
-func (m *DeleteSpecialtyArgs) IsNil() bool { return m == nil }
-
-func (m *DeleteSpecialtyArgs) EncodeFields(w model.FieldWriter) {
-	w.String("id", m.Id)
-}
-
-func (m *DeleteSpecialtyArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok { m.Id = v }
-}
-
-type DeleteSpecialtyArgsList []*DeleteSpecialtyArgs
-
-func (s *DeleteSpecialtyArgsList) Len() int             { return len(*s) }
-func (s *DeleteSpecialtyArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *DeleteSpecialtyArgsList) Append() model.Fielder  { v := &DeleteSpecialtyArgs{}; *s = append(*s, v); return v }
-func (s *DeleteSpecialtyArgsList) IsNil() bool          { return s == nil }
-func (s *DeleteSpecialtyArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *DeleteSpecialtyArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *DeleteSpecialtyArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
+// MountOperations offers every entity of the module: the actions its model allows, with crud's validation and the rules written in rule_*.go.
+func (m *Module) MountOperations(reg crud.Registry) {
+	reg.AddStoredEntity(crud.StoredEntity{
+		Model: &Specialty{},
+		NewList: func() model.ModelSlice { return &SpecialtyList{} },
+		Store: m.StoreSpecialty(),
+		Rules: SpecialtyModel.Rules,
+		MFA: SpecialtyModel.MFA,
+		Create: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
+			return rec.(*Specialty).Create(a, tx, m)
+		},
+		Update: func(a crud.CurrentUser, tx crud.Tx, old, next model.Model, fields []string) (crud.RuleAnswer, error) {
+			return next.(*Specialty).Update(a, tx, old.(*Specialty), fields, m)
+		},
+		Delete: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
+			return rec.(*Specialty).Delete(a, tx, m)
+		},
+	})
+	reg.AddStoredEntity(crud.StoredEntity{
+		Model: &Service{},
+		NewList: func() model.ModelSlice { return &ServiceList{} },
+		Store: m.StoreService(),
+		Rules: ServiceModel.Rules,
+		MFA: ServiceModel.MFA,
+		Create: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
+			return rec.(*Service).Create(a, tx, m)
+		},
+		Update: func(a crud.CurrentUser, tx crud.Tx, old, next model.Model, fields []string) (crud.RuleAnswer, error) {
+			return next.(*Service).Update(a, tx, old.(*Service), fields, m)
+		},
+		Delete: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
+			return rec.(*Service).Delete(a, tx, m)
+		},
+		Search: func(a crud.CurrentUser, filter model.Model, text string) ([]storage.Condition, error) {
+			return (&Service{}).Search(a, filter.(*Service), text, m)
+		},
+	})
+	reg.AddStoredEntity(crud.StoredEntity{
+		Model: &ServiceAgreement{},
+		NewList: func() model.ModelSlice { return &ServiceAgreementList{} },
+		Store: m.StoreServiceAgreement(),
+		Rules: ServiceAgreementModel.Rules,
+		MFA: ServiceAgreementModel.MFA,
+		Create: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
+			return rec.(*ServiceAgreement).Create(a, tx, m)
+		},
+		Update: func(a crud.CurrentUser, tx crud.Tx, old, next model.Model, fields []string) (crud.RuleAnswer, error) {
+			return next.(*ServiceAgreement).Update(a, tx, old.(*ServiceAgreement), fields, m)
+		},
+	})
+	reg.AddStoredEntity(crud.StoredEntity{
+		Model: &ServiceSupply{},
+		NewList: func() model.ModelSlice { return &ServiceSupplyList{} },
+		Store: m.StoreServiceSupply(),
+		Rules: ServiceSupplyModel.Rules,
+		MFA: ServiceSupplyModel.MFA,
+		Create: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
+			return rec.(*ServiceSupply).Create(a, tx, m)
+		},
+		Update: func(a crud.CurrentUser, tx crud.Tx, old, next model.Model, fields []string) (crud.RuleAnswer, error) {
+			return next.(*ServiceSupply).Update(a, tx, old.(*ServiceSupply), fields, m)
+		},
+	})
+	reg.AddReadOnlyEntity(&CurrencyOption{}, func() model.Model { return &CurrencyOption{} }, func(a crud.CurrentUser, args crud.ReadArgs, filter model.Model) (model.ModelSlice, error) {
+		return (&CurrencyOption{}).Read(a, filter.(*CurrencyOption), args, m)
+	})
 }

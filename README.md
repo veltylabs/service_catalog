@@ -1,92 +1,37 @@
-# service-catalog
+# Service Catalog Module
 <img src="docs/img/badges.svg">
 
-Catálogo de los **servicios** que ofrece una empresa y las **especialidades** que los clasifican. Diseñado para el ecosistema Velty.
-Los productos y suministros son otros módulos (`pharmacy_manager`, `supply_manager`).
+El módulo `service-catalog` gestiona el catálogo de servicios y sus especialidades para el ecosistema Velty.
+Actúa como la fuente de verdad de los servicios ofertados por una clínica o centro de salud, los cuales son consumidos
+por módulos como `appointment-booking`.
 
-*Nota:* `Deps.TenantID` es obligatorio; las operaciones nunca leen el tenant de la petición; los permisos se nombran con `model.ResourceOf(&Tabla)`.
+## Entidades y Operaciones (crud)
 
-## Inicio Rápido
+La persistencia y el transporte los maneja el framework `crud` bajo las reglas del dominio escritas en `rule_*.go`.
+No hay lógica de persistencia manual; la tabla mapea a:
 
-Las tablas se crean y migran usando `ddl.Sync` (flujo de sincronización: https://github.com/webtyp/ddl/blob/main/docs/diagrams/SYNC_FLOW.md).
+| Today | After |
+|---|---|
+| `list_specialties / get_specialty` | `specialty.read` |
+| `upsert_specialty` | `specialty.create` / `specialty.update` |
+| `delete_specialty` | `specialty.delete` |
+| `list_services / get_service` | `service.read` |
+| `find_service_by_sku` | `service.read` with filter `{sku}` |
+| `create_service / update_service / upsert_service` | `service.create` / `service.update` |
+| `deactivate_service` | `service.update` with `["is_active"]` |
+| `delete_service` | `service.delete` |
+| `list_currencies` | read model `CurrencyOption` |
+| `list_agreements / upsert_agreement / delete_agreement` | `service_agreement.read`, `service_agreement.create`, `service_agreement.update`, `service_agreement.delete` |
+| `list_service_supplies / upsert_service_supply / delete_service_supply` | `service_supply.read`, `service_supply.create`, `service_supply.update`, `service_supply.delete` |
 
-```go
-import (
-	"webtyp.com/orm"
-	"webtyp.com/storage/mem"
-	servicecatalog "github.com/veltylabs/service_catalog"
-)
+### Sin/Con Framework
 
-// En una aplicación real, inyecta la conexión a la base de datos elegida por la app compositora
-db := orm.New(mem.New())
-idGenerator := &MyIDGenerator{} // implementa model.IDGenerator
+| Antes | Con crud-by-declaration |
+|---|---|
+| Handlers manuales (`op*.go`), `store.Create`, `store.Update` repetitivos | Declaración en `definition.go` |
+| Lógica de dominio acoplada a DB | Lógica de negocio (unicidad, precio) en `rule_*.go` |
+| Operaciones duplicadas por verbos | Rutas automáticas REST/MCP basadas en acciones |
 
-module, _ := servicecatalog.New(db, servicecatalog.Deps{
-	TenantID:   "my-tenant", // es obligatorio; las operaciones nunca leen el tenant de la petición
-	IDs:        idGenerator,
-	Currencies: []string{servicecatalog.CurrencyCLP}, // Si no se indica, el catálogo acepta solo CLP
-})
+## Dependencias (Hexagonal)
 
-// Crear especialidad
-specialty, _ := module.UpsertSpecialty(servicecatalog.Specialty{
-	TenantId: "my-tenant", // A nivel de dominio se pasa el tenant (las operaciones lo sobreescriben)
-	Prefix:   "md",
-	Name:     "Medicina General",
-})
-
-// Crear un servicio
-service, _ := module.CreateService(servicecatalog.Service{
-	TenantId:    "my-tenant",
-	SpecialtyId: specialty.Id,
-	Sku:         "md0001",
-	Name:        "Consulta General",
-	Price:       100,
-	Currency:    "USD",
-	IsActive:    true,
-})
-```
-
-## Operaciones
-| Nombre Op | Descripción |
-|-----------|-------------|
-| `list_specialties` | Listar especialidades para un inquilino |
-| `list_currencies` | Listar monedas aceptadas |
-| `get_specialty` | Obtener especialidad por ID |
-| `upsert_specialty` | Crear o actualizar especialidad |
-| `delete_specialty` | Eliminar especialidad |
-| `list_services` | Listar servicios para un inquilino |
-| `get_service` | Obtener servicio por ID |
-| `find_service_by_sku` | Encontrar servicio por SKU |
-| `create_service` | Crear nuevo servicio |
-| `update_service` | Actualizar servicio existente |
-| `upsert_service` | Crear o actualizar servicio |
-| `deactivate_service` | Borrado lógico de servicio |
-| `delete_service` | Borrado físico de servicio |
-| `list_agreements` | Listar convenios de facturación |
-| `upsert_agreement` | Crear o actualizar convenio |
-| `delete_agreement` | Eliminar convenio |
-
-## Lectores (Inter-Módulo)
-- `ServiceExists(tenantId, serviceId string) (bool, error)`: Comprueba si un servicio existe y está activo.
-- `ServiceCard(tenantId, serviceId string) (name string, price float64, currency string, active bool, err error)`: Obtiene detalles del servicio para facturación/reservas.
-
-## Vista y demo
-
-Este módulo contiene su propio componente UI (`ui/`) y datos semilla (`seed/`).
-
-- **`ui/`**: Exporta `ID` (`catalog_item`), `Label` (`Catálogo`), y `Screens(caller)`. La especialidad se configura como un `view.Lookup`; sin selector junto al título. Cada pantalla lleva una descripción de sí misma a través de opciones como `view.WithDescription`. Las listas se cargan según declara su `view.Page` y se buscan en el servidor.
-- **`seed/`**: Exporta `seed.Load(module, tenantID)`, poblando 3 especialidades canónicas y 1 servicio en cada una.
-
-## Archivos Clave
-| Archivo | Propósito |
-|------|---------|
-| `model.go` | Estructuras de datos y esquemas |
-| `module.go` | `Deps`, `New`, los métodos de dominio y los lectores (`ServiceExists`, `ServiceCard`) |
-| `errors.go` | Constantes de error (los errores salen por `rpc.WriteError`: 400/404/409 con el texto y el campo que falló; un 500 no muestra el detalle) |
-| `ops.go` | Nombres de operaciones, las formas en red de la vista, `MountOperations` y los manejadores |
-| `recipe.go` | La receta de insumos de un servicio y su lector `ServiceRecipe` |
-| `migration.go` | Migración de prefijo SKU a especialidad |
-| `model_orm.go` | Ayudantes ORM generados |
-| `ui/` | Presentador de vista del módulo y componentes |
-| `seed/` | Cargador de datos de ejemplo para demo |
-| `tests/` | Pruebas funcionales y unitarias |
+El módulo requiere ser inicializado mediante la inyección de `IDGenerator`, y `Events` de manera opcional para publicar sus eventos de creación y edición.

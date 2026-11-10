@@ -5,22 +5,20 @@ import (
 )
 
 const (
-	ErrNotFound           model.NotFound = "service not found"
-	ErrSpecialtyNotFound  model.NotFound = "specialty not found"
-	ErrSupplyLineNotFound model.NotFound = "service_catalog: recipe line not found"
+	ErrNotFound           model.NotFound = "servicio_no_encontrado"
+	ErrSpecialtyNotFound  model.NotFound = "especialidad_no_encontrada"
+	ErrSupplyLineNotFound model.NotFound = "receta_no_encontrada"
 
-	ErrAlreadyExists         model.Conflict = "service already exists"
-	ErrSpecialtyPrefixExists model.Conflict = "specialty prefix already exists"
-	ErrSupplyLineExists      model.Conflict = "service_catalog: the recipe already has this supply"
+	ErrAlreadyExists         model.Conflict = "servicio_duplicado"
+	ErrSpecialtyPrefixExists model.Conflict = "prefijo_duplicado"
+	ErrSupplyLineExists      model.Conflict = "receta_duplicada"
 
-	ErrSpecialtyInUse      model.Invalid = "specialty in use"
-	ErrNoRecords           model.Invalid = "service_catalog: no records to save"
-	ErrNoIds               model.Invalid = "service_catalog: no ids given"
-	ErrQuantity            model.Invalid = "service_catalog: the quantity must be greater than zero"
-	ErrUnsupportedCurrency model.Invalid = "service_catalog: currency not accepted by this catalog"
+	ErrSpecialtyInUse      model.Invalid = "especialidad en uso"
+	ErrQuantity            model.Invalid = "cantidad debe ser mayor a cero"
+	ErrUnsupportedCurrency model.Invalid = "moneda no soportada"
 	// ErrActiveNeedsPrice: un servicio activo se puede reservar y cobrar, así que necesita precio. Uno sin precio
 	// todavía (por ejemplo, recién importado) se guarda inactivo hasta que alguien le ponga el precio.
-	ErrActiveNeedsPrice model.Invalid = "an active service needs a price — set the price, or leave the service inactive until it has one"
+	ErrActiveNeedsPrice model.Invalid = "servicio activo necesita precio"
 
 	ErrCannotRead model.Invalid = "service_catalog: cannot read the request"
 )

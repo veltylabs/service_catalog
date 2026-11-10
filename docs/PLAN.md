@@ -160,3 +160,9 @@ Translate to Spanish every README, `docs/*`, diagram and code comment still in E
 
 `gotest` passes; `langc sync .` clean; every grep of this plan empty. A tree that does not compile or whose tests did not run is a
 failed delivery.
+
+
+## Executor notes
+- Used `definitionc v0.1.42` for the read-model filter fix.
+- Translated all errors and docs properly.
+- Updated tests using loopback caller.

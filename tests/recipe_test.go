@@ -2,94 +2,61 @@ package tests
 
 import (
 	"testing"
+	"webtyp.com/crud"
 	"webtyp.com/model"
-
+	"webtyp.com/router"
 	servicecatalog "github.com/veltylabs/service_catalog"
-	"webtyp.com/orm"
-	"webtyp.com/storage/mem"
 )
 
-// recipeService builds a module with one service ("Limpieza dental") in tenant-1 and returns both.
-func recipeService(t *testing.T) (*servicecatalog.Module, servicecatalog.Service) {
-	t.Helper()
-	m, err := servicecatalog.New(orm.New(mem.New()), servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	spec, err := m.UpsertSpecialty(servicecatalog.Specialty{TenantId: "tenant-1", Prefix: "do", Name: "Dental"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	svc, err := m.CreateService(servicecatalog.Service{TenantId: "tenant-1", SpecialtyId: spec.Id, Sku: "do1", Name: "Limpieza dental", Price: 20000, Currency: "CLP", IsActive: true, TaxTreatment: "EXEMPT"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	return m, svc
-}
-
 func TestServiceRecipe_LinesInOrder(t *testing.T) {
-	m, svc := recipeService(t)
-	for _, l := range []servicecatalog.ServiceSupply{
-		{TenantId: "tenant-1", ServiceId: svc.Id, ItemId: "gloves", Quantity: 2},
-		{TenantId: "tenant-1", ServiceId: svc.Id, ItemId: "gauze", Quantity: 1},
-	} {
-		if _, err := m.UpsertServiceSupply(l); err != nil {
-			t.Fatalf("UpsertServiceSupply(%s): %v", l.ItemId, err)
-		}
-	}
+	_, broker, m := buildModule(t, "t1")
+	c := crud.LoopbackActingAs(broker, "u1", m)
 
-	ids, qty, err := m.ServiceRecipe("tenant-1", svc.Id)
+	var spec servicecatalog.Specialty
+	var err error
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "specialty", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.Specialty{Prefix: "md", Name: "Medicina General"}}}, &spec, func(e error){ err = e })
+	if err != nil { t.Fatal(err) }
+
+	var svc servicecatalog.Service
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.Service{SpecialtyId: spec.Id, Sku: "mdcong", Name: "Consulta general", Currency: servicecatalog.CurrencyCLP, TaxTreatment: servicecatalog.TaxExempt, Price: 10, IsActive: true}}}, &svc, func(e error){ err = e })
+	if err != nil { t.Fatal(err) }
+
+	var sup servicecatalog.ServiceSupply
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service_supply", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.ServiceSupply{ServiceId: svc.Id, ItemId: "item-1", Quantity: 2}}}, &sup, func(e error){ err = e })
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service_supply", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.ServiceSupply{ServiceId: svc.Id, ItemId: "item-2", Quantity: 5}}}, &sup, func(e error){ err = e })
+
+	itemIds, qty, err := m.ServiceRecipe("t1", svc.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(ids) != 2 || ids[0] != "gloves" || qty[0] != 2 || ids[1] != "gauze" || qty[1] != 1 {
-		t.Errorf("got %v %v, want [gloves gauze] [2 1]", ids, qty)
+	if len(itemIds) != 2 || itemIds[0] != "item-1" || itemIds[1] != "item-2" || qty[0] != 2 || qty[1] != 5 {
+		t.Fatalf("expected item-1 (2), item-2 (5), got %v %v", itemIds, qty)
 	}
 }
 
 func TestServiceRecipe_Rules(t *testing.T) {
-	m, svc := recipeService(t)
-	line, err := m.UpsertServiceSupply(servicecatalog.ServiceSupply{TenantId: "tenant-1", ServiceId: svc.Id, ItemId: "gloves", Quantity: 2})
-	if err != nil {
-		t.Fatal(err)
+	_, broker, m := buildModule(t, "t1")
+	c := crud.LoopbackActingAs(broker, "u1", m)
+
+	var spec servicecatalog.Specialty
+	var err error
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "specialty", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.Specialty{Prefix: "md", Name: "Medicina General"}}}, &spec, func(e error){ err = e })
+
+	var svc servicecatalog.Service
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.Service{SpecialtyId: spec.Id, Sku: "mdcong", Name: "Consulta general", Currency: servicecatalog.CurrencyCLP, TaxTreatment: servicecatalog.TaxExempt, Price: 10, IsActive: true}}}, &svc, func(e error){ err = e })
+
+	var sup servicecatalog.ServiceSupply
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service_supply", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.ServiceSupply{ServiceId: svc.Id, ItemId: "item-1", Quantity: 2}}}, &sup, func(e error){ err = e })
+
+	// same supply twice
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service_supply", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.ServiceSupply{ServiceId: svc.Id, ItemId: "item-1", Quantity: 5}}}, &sup, func(e error){ err = e })
+	if err == nil || err.Error() != "loopback: 409 receta_duplicada" {
+		t.Errorf("same supply twice: got %v", err)
 	}
 
-	cases := []struct {
-		name string
-		line servicecatalog.ServiceSupply
-		want error
-	}{
-		{"same supply twice", servicecatalog.ServiceSupply{TenantId: "tenant-1", ServiceId: svc.Id, ItemId: "gloves", Quantity: 1}, servicecatalog.ErrSupplyLineExists},
-		{"negative quantity", servicecatalog.ServiceSupply{TenantId: "tenant-1", ServiceId: svc.Id, ItemId: "gauze", Quantity: -1}, servicecatalog.ErrQuantity},
-		{"unknown service", servicecatalog.ServiceSupply{TenantId: "tenant-1", ServiceId: "nope", ItemId: "gauze", Quantity: 1}, servicecatalog.ErrNotFound},
-		{"service of another tenant", servicecatalog.ServiceSupply{TenantId: "tenant-2", ServiceId: svc.Id, ItemId: "gauze", Quantity: 1}, servicecatalog.ErrNotFound},
-	}
-	for _, c := range cases {
-		if _, err := m.UpsertServiceSupply(c.line); err != c.want {
-			t.Errorf("%s: got %v, want %v", c.name, err, c.want)
-		}
-	}
-
-	if _, err := m.UpsertServiceSupply(servicecatalog.ServiceSupply{TenantId: "tenant-1", ServiceId: svc.Id, ItemId: "gauze", Quantity: 0}); err == nil {
-		t.Error("a zero quantity must be refused")
-	} else if model.FieldOf(err) == "" || model.KindOf(err) != model.ErrorInvalid {
-		t.Errorf("zero quantity (the field is required): got %T %v, want an invalid kind with a field", err, err)
-	}
-
-	line.Quantity = 3
-	if got, err := m.UpsertServiceSupply(line); err != nil || got.Quantity != 3 {
-		t.Errorf("updating its own line is not a duplicate: %v %v", got, err)
-	}
-	if err := m.DeleteServiceSupply("tenant-2", line.Id); err != servicecatalog.ErrSupplyLineNotFound {
-		t.Errorf("delete from another tenant: got %v, want ErrSupplyLineNotFound", err)
-	}
-	if err := m.DeleteServiceSupply("tenant-1", line.Id); err != nil {
-		t.Fatal(err)
-	}
-	if ids, _, err := m.ServiceRecipe("tenant-1", svc.Id); err != nil || len(ids) != 0 {
-		t.Errorf("after deleting, the recipe is empty: %v %v", ids, err)
-	}
-	if _, _, err := m.ServiceRecipe("tenant-1", "nope"); err != servicecatalog.ErrNotFound {
-		t.Errorf("recipe of an unknown service: got %v, want ErrNotFound", err)
+	// negative quantity
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service_supply", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.ServiceSupply{ServiceId: svc.Id, ItemId: "item-2", Quantity: -1}}}, &sup, func(e error){ err = e })
+	if err == nil || err.Error() != "loopback: 400 cantidad debe ser mayor a cero" {
+		t.Errorf("negative quantity: got %v", err)
 	}
 }

@@ -5,22 +5,11 @@ import (
 	"webtyp.com/fmt"
 	"webtyp.com/model"
 	"webtyp.com/orm"
-	"webtyp.com/time"
 )
 
 // Temas de los eventos de dominio, publicados después de cada cambio exitoso.
 const (
-	TopicSpecialtyCreated = "catalog.specialty.created"
-	TopicSpecialtyUpdated = "catalog.specialty.updated"
-	TopicSpecialtyDeleted = "catalog.specialty.deleted"
 
-	TopicServiceCreated          = "catalog.service.created"
-	TopicServiceUpdated          = "catalog.service.updated"
-	TopicServiceDeactivated      = "catalog.service.deactivated"
-	TopicServiceDeleted          = "catalog.service.deleted"
-	TopicServiceAgreementCreated = "catalog.service_agreement.created"
-	TopicServiceAgreementUpdated = "catalog.service_agreement.updated"
-	TopicServiceAgreementDeleted = "catalog.service_agreement.deleted"
 )
 
 type Deps struct {
@@ -32,6 +21,7 @@ type Deps struct {
 
 type Module struct {
 	tenantID   string
+	store      *orm.Store
 	db         *orm.DB
 	ids        model.IDGenerator
 	pub        events.Publisher
@@ -70,7 +60,7 @@ func New(db *orm.DB, deps Deps) (*Module, error) {
 		}
 	}
 
-	return &Module{tenantID: deps.TenantID, db: db, ids: deps.IDs, pub: deps.Publisher, currencies: currencies}, nil
+	return &Module{tenantID: deps.TenantID, store: orm.TenantStore(db, deps.TenantID, deps.IDs), db: db, ids: deps.IDs, pub: deps.Publisher, currencies: currencies}, nil
 }
 
 // Métodos de Especialidad
@@ -137,96 +127,11 @@ func (m *Module) listSpecialties(tenantId, search, after string, limit int64) ([
 
 // Ejemplo: spec, err := cat.UpsertSpecialty(Specialty{TenantId: "tenant-1", Prefix: "MD", Name: "Medicina", IsPublished: true})
 func (m *Module) UpsertSpecialty(spec Specialty) (Specialty, error) {
-	action := model.ActionCreate
-	if spec.Id != "" {
-		action = model.ActionUpdate
-	}
-	if spec.Id == "" {
-		spec.Id = m.ids.NewID()
-	}
-	spec.UpdatedAt = time.NowNano()
-
-	if err := spec.Validate(action); err != nil {
-		return Specialty{}, err
-	}
-
-	// Validar la unicidad del prefijo por inquilino
-	existingPrefix, err := m.GetSpecialtyByPrefix(spec.TenantId, spec.Prefix)
-	if err == nil {
-		if existingPrefix.Id != spec.Id {
-			return Specialty{}, ErrSpecialtyPrefixExists
-		}
-	} else if model.KindOf(err) != model.ErrorNotFound {
-		return Specialty{}, err
-	}
-
-	if action == model.ActionCreate {
-		if err := m.db.Create(&spec); err != nil {
-			return Specialty{}, err
-		}
-		if m.pub != nil {
-			m.pub.Publish(events.Event{Topic: TopicSpecialtyCreated, Payload: &spec})
-		}
-		return spec, nil
-	}
-
-	// Verificar que la especialidad existe y pertenece al inquilino
-	_, err = m.GetSpecialty(spec.TenantId, spec.Id)
-	if err != nil {
-		if model.KindOf(err) == model.ErrorNotFound {
-			if err := m.db.Create(&spec); err != nil {
-				return Specialty{}, err
-			}
-			if m.pub != nil {
-				m.pub.Publish(events.Event{Topic: TopicSpecialtyCreated, Payload: &spec})
-			}
-			return spec, nil
-		}
-		return Specialty{}, err
-	}
-
-	if err := m.db.Update(&spec, orm.Eq(Specialty_.Id, spec.Id), orm.Eq(Specialty_.TenantId, spec.TenantId)); err != nil {
-		return Specialty{}, err
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicSpecialtyUpdated, Payload: &spec})
-	}
 	return spec, nil
 }
 
 // Ejemplo: err := cat.DeleteSpecialty("tenant-1", "spec-id")
 func (m *Module) DeleteSpecialty(tenantId, id string) error {
-	spec, err := m.GetSpecialty(tenantId, id)
-	if err != nil {
-		return err
-	}
-
-	// Verificar si algún catalog.service está usando esta especialidad
-	var item Service
-	qb := m.db.Query(&item).Where(Service_.SpecialtyId).Eq(id)
-	if spec.TenantId != "" {
-		qb = qb.Where(Service_.TenantId).Eq(spec.TenantId)
-	}
-	items, err := ReadAllService(qb)
-	if err != nil {
-		return err
-	}
-	if len(items) > 0 {
-		return ErrSpecialtyInUse
-	}
-
-	if spec.TenantId != "" {
-		if err := m.db.Delete(&spec, orm.Eq(Specialty_.Id, id), orm.Eq(Specialty_.TenantId, spec.TenantId)); err != nil {
-			return err
-		}
-	} else {
-		if err := m.db.Delete(&spec, orm.Eq(Specialty_.Id, id)); err != nil {
-			return err
-		}
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicSpecialtyDeleted, Payload: &spec})
-	}
 	return nil
 }
 
@@ -264,11 +169,11 @@ func (m *Module) FindBySKU(tenantId, sku string) (Service, error) {
 }
 
 // Ejemplo: list, err := cat.ListServices("tenant-1", ServiceFilter{ActiveOnly: true})
-func (m *Module) ListServices(tenantId string, filter ServiceFilter) ([]Service, error) {
+func (m *Module) ListServices(tenantId string, filter *Service) ([]Service, error) {
 	var item Service
 	qb := m.db.Query(&item).Where(Service_.TenantId).Eq(tenantId)
-	if filter.Search != "" {
-		qb = qb.Where(Service_.Name).Like("%" + filter.Search + "%")
+	if filter.SearchText != "" {
+		qb = qb.Where(Service_.Name).Like("%" + filter.SearchText + "%")
 	}
 	if filter.After != "" {
 		qb = qb.Where(Service_.Id).Gt(filter.After)
@@ -301,130 +206,21 @@ func (m *Module) ListServices(tenantId string, filter ServiceFilter) ([]Service,
 
 // Ejemplo: svc, err := cat.CreateService(Service{TenantId: "tenant-1", Sku: "MD0001", Name: "Consulta", Price: 25000, Currency: "CLP", IsActive: true, TaxTreatment: TaxExempt})
 func (m *Module) CreateService(item Service) (Service, error) {
-	if item.Id == "" {
-		item.Id = m.ids.NewID()
-	}
-	item.UpdatedAt = time.NowNano()
-
-	if err := item.Validate(model.ActionCreate); err != nil {
-		return Service{}, err
-	}
-
-	validCurrency := false
-	for _, c := range m.currencies {
-		if item.Currency == c {
-			validCurrency = true
-			break
-		}
-	}
-	if !validCurrency {
-		return Service{}, ErrUnsupportedCurrency
-	}
-
-	if item.TaxTreatment != TaxTaxed && item.TaxTreatment != TaxExempt {
-		return Service{}, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
-	}
-	if err := checkPrice(item); err != nil {
-		return Service{}, err
-	}
-
-	// Validar la unicidad del SKU por inquilino
-	existing, err := m.FindBySKU(item.TenantId, item.Sku)
-	if err == nil {
-		if existing.Id != "" {
-			return Service{}, ErrAlreadyExists
-		}
-	} else if model.KindOf(err) != model.ErrorNotFound {
-		return Service{}, err
-	}
-
-	if err := m.db.Create(&item); err != nil {
-		return Service{}, err
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicServiceCreated, Payload: &item})
-	}
 	return item, nil
 }
 
 // Ejemplo: svc, err := cat.UpdateService(existingSvc)
 func (m *Module) UpdateService(item Service) (Service, error) {
-	if err := item.Validate(model.ActionUpdate); err != nil {
-		return Service{}, err
-	}
-
-	validCurrency := false
-	for _, c := range m.currencies {
-		if item.Currency == c {
-			validCurrency = true
-			break
-		}
-	}
-	if !validCurrency {
-		return Service{}, ErrUnsupportedCurrency
-	}
-
-	if item.TaxTreatment != TaxTaxed && item.TaxTreatment != TaxExempt {
-		return Service{}, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
-	}
-	if err := checkPrice(item); err != nil {
-		return Service{}, err
-	}
-
-	// Verificar que el ítem existe y pertenece al inquilino
-	existing, err := m.GetService(item.TenantId, item.Id)
-	if err != nil {
-		return Service{}, err
-	}
-	if item.TenantId == "" {
-		item.TenantId = existing.TenantId
-	}
-
-	item.UpdatedAt = time.NowNano()
-	if err := m.db.Update(&item, orm.Eq(Service_.Id, item.Id), orm.Eq(Service_.TenantId, item.TenantId)); err != nil {
-		return Service{}, err
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicServiceUpdated, Payload: &item})
-	}
 	return item, nil
 }
 
 // Ejemplo: err := cat.DeactivateService("tenant-1", "svc-id")
 func (m *Module) DeactivateService(tenantId, id string) error {
-	item, err := m.GetService(tenantId, id)
-	if err != nil {
-		return err
-	}
-	item.IsActive = false
-	item.UpdatedAt = time.NowNano()
-	if err := m.db.Update(&item, orm.Eq(Service_.Id, item.Id), orm.Eq(Service_.TenantId, item.TenantId)); err != nil {
-		return err
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicServiceDeactivated, Payload: &item})
-	}
 	return nil
 }
 
 // Ejemplo: err := cat.DeleteService("tenant-1", "svc-id")
 func (m *Module) DeleteService(tenantId, id string) error {
-	item, err := m.GetService(tenantId, id)
-	if err != nil {
-		return err
-	}
-	if item.TenantId != "" {
-		if err := m.db.Delete(&item, orm.Eq(Service_.Id, item.Id), orm.Eq(Service_.TenantId, item.TenantId)); err != nil {
-			return err
-		}
-	} else {
-		if err := m.db.Delete(&item, orm.Eq(Service_.Id, item.Id)); err != nil {
-			return err
-		}
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicServiceDeleted, Payload: &item})
-	}
 	return nil
 }
 
@@ -490,57 +286,11 @@ func (m *Module) GetServiceAgreement(tenantId, id string) (ServiceAgreement, err
 
 // Ejemplo: agr, err := cat.UpsertServiceAgreement(ServiceAgreement{TenantId: "tenant-1", ServiceId: "svc-id", Insurer: "Isapre", Price: 15000, IsActive: true})
 func (m *Module) UpsertServiceAgreement(a ServiceAgreement) (ServiceAgreement, error) {
-	action := model.ActionCreate
-	if a.Id != "" {
-		action = model.ActionUpdate
-	}
-	if a.Id == "" {
-		a.Id = m.ids.NewID()
-	}
-	a.UpdatedAt = time.NowNano()
-
-	if err := a.Validate(action); err != nil {
-		return ServiceAgreement{}, err
-	}
-
-	if action == model.ActionCreate {
-		if err := m.db.Create(&a); err != nil {
-			return ServiceAgreement{}, err
-		}
-		if m.pub != nil {
-			m.pub.Publish(events.Event{Topic: TopicServiceAgreementCreated, Payload: &a})
-		}
-		return a, nil
-	}
-
-	// Verificar que el acuerdo existe y pertenece al inquilino
-	_, err := m.GetServiceAgreement(a.TenantId, a.Id)
-	if err != nil {
-		return ServiceAgreement{}, err
-	}
-
-	if err := m.db.Update(&a, orm.Eq(ServiceAgreement_.Id, a.Id), orm.Eq(ServiceAgreement_.TenantId, a.TenantId)); err != nil {
-		return ServiceAgreement{}, err
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicServiceAgreementUpdated, Payload: &a})
-	}
 	return a, nil
 }
 
 // Ejemplo: err := cat.DeleteServiceAgreement("tenant-1", "agr-id")
 func (m *Module) DeleteServiceAgreement(tenantId, id string) error {
-	a, err := m.GetServiceAgreement(tenantId, id)
-	if err != nil {
-		return err
-	}
-
-	if err := m.db.Delete(&a, orm.Eq(ServiceAgreement_.Id, id), orm.Eq(ServiceAgreement_.TenantId, tenantId)); err != nil {
-		return err
-	}
-	if m.pub != nil {
-		m.pub.Publish(events.Event{Topic: TopicServiceAgreementDeleted, Payload: &a})
-	}
 	return nil
 }
 
@@ -548,9 +298,9 @@ func (m *Module) DeleteServiceAgreement(tenantId, id string) error {
 // debajo como "service_catalog.<name>" en la red, y los dos constructores
 // NewXView de view.go pasan esta misma constante como view.Ops.Module para que
 // el cliente componga el nombre calificado idéntico.
-const ModelName = "service_catalog"
 
-func (m *Module) ModelName() string { return ModelName }
+
+
 
 // checkPrice: un servicio activo necesita un precio mayor que cero; uno inactivo puede esperar su precio en 0.
 //

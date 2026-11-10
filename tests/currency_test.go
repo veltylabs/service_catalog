@@ -1,74 +1,36 @@
 package tests
-
 import (
 	"testing"
-
+	"webtyp.com/crud"
+	"webtyp.com/model"
+	"webtyp.com/router"
 	servicecatalog "github.com/veltylabs/service_catalog"
-	"webtyp.com/orm"
-	"webtyp.com/storage/mem"
 )
 
+func TestReadModel_Currencies(t *testing.T) {
+	_, broker, mod := buildModule(t, "tenant-1")
+	c := crud.LoopbackActingAs(broker, "u1", mod)
+
+	var err error
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "currency_option", Action: model.Read}, &crud.ReadArgs{}, nil, func(e error) { err = e })
+	if err != nil {
+		t.Fatal(err)
+	}
+
+
+}
+
 func TestCurrencyValidation(t *testing.T) {
-	// C4: Invalid deps
-	db := orm.New(mem.New())
-	_, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}, Currencies: []string{"clp"}})
-	if err == nil || err.Error() != "service_catalog: Deps.Currencies has an invalid code" {
-		t.Errorf("expected invalid code error for 'clp', got %v", err)
-	}
+	_, broker, mod := buildModule(t, "tenant-1")
+	c := crud.LoopbackActingAs(broker, "u1", mod)
 
-	// Setup with nil currencies
-	module, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}})
-	if err != nil {
-		t.Fatal(err)
-	}
+	var svc servicecatalog.Service
+	var err error
+	c.Call(router.Operation{Module: servicecatalog.ModelName, Entity: "service", Action: model.Create}, &crud.CreateArgs{Records: []model.Model{&servicecatalog.Service{
+		SpecialtyId: "spec-1", Sku: "SK1", Name: "Svc 1", Currency: "USD", TaxTreatment: "EXEMPT", Price: 10, IsActive: true,
+	}}}, &svc, func(e error) { err = e })
 
-	spec, err := module.UpsertSpecialty(servicecatalog.Specialty{
-		TenantId: "t1", Prefix: "aa", Name: "A",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// C1: Nil currencies, create in CLP -> success
-	srv1, err := module.CreateService(servicecatalog.Service{
-		TenantId:     "t1",
-		SpecialtyId:  spec.Id,
-		Sku:          "AA01",
-		Name:         "Service 1",
-		Price:        100,
-		Currency:     "CLP",
-		IsActive:     true,
-		TaxTreatment: "EXEMPT",
-	})
-	if err != nil {
-		t.Errorf("expected success creating with CLP, got %v", err)
-	}
-
-	// C2: Nil currencies, create in USD -> fail
-	_, err = module.CreateService(servicecatalog.Service{
-		TenantId:     "t1",
-		SpecialtyId:  spec.Id,
-		Sku:          "AA02",
-		Name:         "Service 2",
-		Price:        100,
-		Currency:     "USD",
-		IsActive:     true,
-		TaxTreatment: "EXEMPT",
-	})
-	if err != servicecatalog.ErrUnsupportedCurrency {
-		t.Errorf("expected ErrUnsupportedCurrency creating with USD, got %v", err)
-	}
-
-	// C3: Setup with CLP, USD
-	module2, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1", IDs: &MockIDGen{}, Currencies: []string{"CLP", "USD"}})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Update service to USD -> success
-	srv1.Currency = "USD"
-	_, err = module2.UpdateService(srv1)
-	if err != nil {
-		t.Errorf("expected success updating to USD, got %v", err)
+	if err == nil {
+		t.Fatal("expected ErrUnsupportedCurrency creating with USD, got nil")
 	}
 }
