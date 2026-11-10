@@ -16,3 +16,6 @@
 | [TestServiceRecipe_LinesInOrder](../tests/recipe_test.go) | lines in order | TestServiceRecipe_LinesInOrder |
 | [TestServiceRecipe_Rules](../tests/recipe_test.go) | recipe rules | TestServiceRecipe_Rules |
 | [TestSeedLoad](../tests/seed_test.go) | seed load | TestSeedLoad |
+| [TestMigrate_UpToDate_OnlyEnsuresTables](../tests/migrate_test.go) | con el esquema al día solo se aseguran las tablas | TestMigrate_UpToDate_OnlyEnsuresTables |
+| [TestMigrate_NewField_AddsOnlyThatColumn](../tests/migrate_test.go) | un campo nuevo agrega solo esa columna | TestMigrate_NewField_AddsOnlyThatColumn |
+| [TestMigrate_IntrospectionFails_ReturnsErrorAndStops](../tests/migrate_test.go) | si falla la introspección, la migración devuelve el error y se detiene | TestMigrate_IntrospectionFails_ReturnsErrorAndStops |
