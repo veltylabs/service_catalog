@@ -10,7 +10,7 @@ require (
 	webtyp.com/events v0.1.8
 	webtyp.com/fmt v1.0.0
 	webtyp.com/html v0.0.30
-	webtyp.com/input v0.0.36
+	webtyp.com/input v0.1.0
 	webtyp.com/lang v0.1.16
 	webtyp.com/model v0.2.19
 	webtyp.com/orm v0.12.31
@@ -45,6 +45,7 @@ require (
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/fetch v0.1.30 // indirect
 	webtyp.com/filepath v0.1.0 // indirect
+	webtyp.com/filetype v0.0.6 // indirect
 	webtyp.com/json v0.5.40 // indirect
 	webtyp.com/keyring v0.2.9 // indirect
 	webtyp.com/mcp v0.3.24 // indirect
