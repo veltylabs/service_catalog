@@ -13,10 +13,10 @@ func (p *Specialty) Delete(a crud.CurrentUser, tx crud.Tx, m *Module) (crud.Rule
 		inUse = true
 	})
 	if err != nil {
-		return 0, err
+		return crud.RuleAnswer{}, err
 	}
 	if inUse {
-		return 0, ErrSpecialtyInUse
+		return crud.RuleAnswer{}, ErrSpecialtyInUse
 	}
-	return crud.ApplyAndPublish, nil
+	return crud.ApplyAndPublish(), nil
 }

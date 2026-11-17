@@ -23,7 +23,7 @@ func Demo() view.Demo {
 		Modules:    []crud.Module{mod},
 		Migrations: nil,
 		Screens: func(d view.BrowserDeps) []view.Screen {
-			return ui.Screens(d.Caller)
+			return ui.Screens(d)
 		},
 	}
 }

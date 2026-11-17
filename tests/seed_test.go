@@ -5,14 +5,14 @@ import (
 
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"github.com/veltylabs/service_catalog/seed"
-	"webtyp.com/events/mock"
+	"webtyp.com/events/inprocess"
 	"webtyp.com/orm"
 	"webtyp.com/storage/mem"
 )
 
 func TestSeedLoad(t *testing.T) {
 	db := orm.New(mem.New())
-	broker := &mock.Broker{}
+	broker := &inprocess.Broker{}
 	idGen := &testIDGen{}
 
 	m, err := servicecatalog.New(db, servicecatalog.Deps{TenantID: "tenant-1",

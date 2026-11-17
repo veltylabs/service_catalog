@@ -4,7 +4,6 @@ import (
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/lang"
 	"webtyp.com/model"
-	"webtyp.com/router"
 	"webtyp.com/view"
 )
 
@@ -18,8 +17,9 @@ const (
 
 // Screens declara las pantallas que este módulo ofrece al menú de la app.
 //
-// Ejemplo: screens := ui.Screens(caller)
-func Screens(caller router.Caller) []view.Screen {
+// Ejemplo: screens := ui.Screens(view.BrowserDeps{Caller: caller})
+func Screens(d view.BrowserDeps) []view.Screen {
+	caller := d.Caller
 	return []view.Screen{{
 		ID:    ID,
 		Label: Label,

@@ -8,13 +8,13 @@ import (
 	servicecatalog "github.com/veltylabs/service_catalog"
 	"webtyp.com/orm"
 	"webtyp.com/storage/mem"
-	"webtyp.com/events/mock"
+	"webtyp.com/events/inprocess"
 )
 
 
-func buildModule(t *testing.T, tenantId string) (*orm.DB, *mock.Broker, *servicecatalog.Module) {
+func buildModule(t *testing.T, tenantId string) (*orm.DB, *inprocess.Broker, *servicecatalog.Module) {
 	db := orm.New(mem.New())
-	broker := &mock.Broker{}
+	broker := &inprocess.Broker{}
 	m, err := servicecatalog.New(db, servicecatalog.Deps{
 		TenantID:   tenantId,
 		Publisher:  broker,

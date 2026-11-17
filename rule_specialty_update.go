@@ -13,10 +13,10 @@ func (next *Specialty) Update(a crud.CurrentUser, tx crud.Tx, old *Specialty, fi
 		}
 	})
 	if err != nil {
-		return 0, err
+		return crud.RuleAnswer{}, err
 	}
 	if conflict {
-		return 0, ErrSpecialtyPrefixExists
+		return crud.RuleAnswer{}, ErrSpecialtyPrefixExists
 	}
-	return crud.ApplyAndPublish, nil
+	return crud.ApplyAndPublish(), nil
 }

@@ -519,8 +519,8 @@ func (m *Module) MountOperations(reg crud.Registry) {
 		Delete: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
 			return rec.(*Service).Delete(a, tx, m)
 		},
-		Search: func(a crud.CurrentUser, filter model.Model, text string) ([]storage.Condition, error) {
-			return (&Service{}).Search(a, filter.(*Service), text, m)
+		Search: func(a crud.CurrentUser, filter model.Model) ([]storage.Condition, error) {
+			return (&Service{}).Search(a, filter.(*Service), m)
 		},
 	})
 	reg.AddStoredEntity(crud.StoredEntity{

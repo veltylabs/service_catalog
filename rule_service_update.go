@@ -17,13 +17,13 @@ func (next *Service) Update(a crud.CurrentUser, tx crud.Tx, old *Service, fields
 		}
 	}
 	if !validCurrency {
-		return 0, ErrUnsupportedCurrency
+		return crud.RuleAnswer{}, ErrUnsupportedCurrency
 	}
 	if next.TaxTreatment != TaxTaxed && next.TaxTreatment != TaxExempt {
-		return 0, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
+		return crud.RuleAnswer{}, &model.FieldError{Field: "tax_treatment", Err: fmt.Err("invalid tax treatment")}
 	}
 	if err := checkPrice(*next); err != nil {
-		return 0, err
+		return crud.RuleAnswer{}, err
 	}
 	conflict := false
 	err := tx.ReadAll(func() model.Model { return &Service{} }, crud.Query{Conditions: []storage.Condition{orm.Eq(Service_.Sku, next.Sku)}}, func(row model.Model) {
@@ -32,10 +32,10 @@ func (next *Service) Update(a crud.CurrentUser, tx crud.Tx, old *Service, fields
 		}
 	})
 	if err != nil {
-		return 0, err
+		return crud.RuleAnswer{}, err
 	}
 	if conflict {
-		return 0, ErrAlreadyExists
+		return crud.RuleAnswer{}, ErrAlreadyExists
 	}
-	return crud.ApplyAndPublish, nil
+	return crud.ApplyAndPublish(), nil
 }

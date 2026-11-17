@@ -13,10 +13,10 @@ func (p *Specialty) Create(a crud.CurrentUser, tx crud.Tx, m *Module) (crud.Rule
 		}
 	})
 	if err != nil {
-		return 0, err
+		return crud.RuleAnswer{}, err
 	}
 	if conflict {
-		return 0, ErrSpecialtyPrefixExists
+		return crud.RuleAnswer{}, ErrSpecialtyPrefixExists
 	}
-	return crud.ApplyAndPublish, nil
+	return crud.ApplyAndPublish(), nil
 }

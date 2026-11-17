@@ -9,7 +9,7 @@ import (
 
 func (p *ServiceSupply) Create(a crud.CurrentUser, tx crud.Tx, m *Module) (crud.RuleAnswer, error) {
 	if p.Quantity <= 0 {
-		return 0, ErrQuantity
+		return crud.RuleAnswer{}, ErrQuantity
 	}
 	conflict := false
 	err := tx.ReadAll(func() model.Model { return &ServiceSupply{} }, crud.Query{Conditions: []storage.Condition{orm.Eq(ServiceSupply_.ServiceId, p.ServiceId)}}, func(row model.Model) {
@@ -18,10 +18,10 @@ func (p *ServiceSupply) Create(a crud.CurrentUser, tx crud.Tx, m *Module) (crud.
 		}
 	})
 	if err != nil {
-		return 0, err
+		return crud.RuleAnswer{}, err
 	}
 	if conflict {
-		return 0, ErrSupplyLineExists
+		return crud.RuleAnswer{}, ErrSupplyLineExists
 	}
-	return crud.ApplyAndPublish, nil
+	return crud.ApplyAndPublish(), nil
 }
