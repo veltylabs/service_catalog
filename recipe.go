@@ -1,9 +1,5 @@
 package servicecatalog
 
-import (
-	"webtyp.com/orm"
-)
-
 // La receta de insumos de un servicio: lo que usa una atención. clinical_encounter lo lee (ServiceRecipe) para cargar los
 // insumos de una atención, y supply_manager los rebaja del stock; ninguno de los dos módulos se importa aquí.
 
@@ -25,19 +21,6 @@ func (m *Module) ListServiceSupplies(tenantId, serviceId string) ([]ServiceSuppl
 		out[i] = *l
 	}
 	return out, nil
-}
-
-func (m *Module) getServiceSupply(tenantId, id string) (ServiceSupply, error) {
-	var proxy ServiceSupply
-	qb := m.db.Query(&proxy).Where(ServiceSupply_.Id).Eq(id).Where(ServiceSupply_.TenantId).Eq(tenantId)
-	got, err := ReadOneServiceSupply(qb, &proxy)
-	if orm.IsNotFound(err) {
-		return ServiceSupply{}, ErrSupplyLineNotFound
-	}
-	if err != nil {
-		return ServiceSupply{}, err
-	}
-	return *got, nil
 }
 
 // UpsertServiceSupply crea una línea de receta (sin id) o actualiza una. El servicio debe existir en el inquilino (ErrNotFound),

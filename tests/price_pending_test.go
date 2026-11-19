@@ -1,19 +1,12 @@
 package tests
 
 import (
-	"errors"
 	"testing"
 	"webtyp.com/crud"
 	"webtyp.com/model"
 	"webtyp.com/router"
 	servicecatalog "github.com/veltylabs/service_catalog"
 )
-
-// needsPrice: el error marca el campo price y su causa es ErrActiveNeedsPrice.
-func needsPrice(err error) bool {
-	var fe *model.FieldError
-	return errors.As(err, &fe) && fe.Field == "price" && fe.Err.Error() == "servicio activo necesita precio"
-}
 
 // Un servicio sin precio todavía (0) se puede guardar inactivo; activo necesita precio.
 func TestPricePending(t *testing.T) {
