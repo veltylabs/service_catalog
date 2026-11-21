@@ -3,6 +3,7 @@ package servicecatalog
 import (
 	"webtyp.com/input"
 	"webtyp.com/model"
+	"webtyp.com/palette"
 )
 
 // Helpers para satisfacer el parser de tipos estático AST de ormc v0.9.24:
@@ -29,7 +30,7 @@ var SpecialtyModel = model.Definition{
 	Fields: model.Fields{
 		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}, OmitEmpty: true, ServerOnly: true},
 		{Name: "tenant_id", Type: model.Text(), NotNull: true, ServerOnly: true},
-		{Name: "prefix", Type: input.Text(), Label: "Reference code", Help: "Two letters every service code (SKU) of this specialty starts with, e.g. MD for MD001.", NotNull: true, Item: model.ItemDescription,
+		{Name: "prefix", Type: input.Text(), Label: "Reference code", Help: "Two letters every service code (SKU) of this specialty starts with, e.g. MD for MD001.", NotNull: true,
 			Permitted: model.Permitted{Letters: true, Minimum: 2, Maximum: 2}},
 		// input.Text()'s own baseline Extra ('.', ',', '(', ')') no incluye
 		// '+' — "Dental (Odontología + Ortodoncia)" lo necesita, así que
@@ -37,8 +38,9 @@ var SpecialtyModel = model.Definition{
 		// del Kind (Field.Validate: un whitelist positivo propio reemplaza
 		// el floor de Text, no lo suma). Tilde cubre las vocales acentuadas
 		// sin listarlas una a una.
-		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true, Item: model.ItemLabel,
+		{Name: "name", Type: input.Text(), Label: "Name", NotNull: true,
 			Permitted: model.Permitted{Letters: true, Tilde: true, Spaces: true, Extra: []rune{'+', '(', ')'}, Minimum: 1, Maximum: 100}},
+		{Name: "tone", Type: input.Select(), Label: "Color", Help: "Color from the clinic palette.", OmitEmpty: true, Options: &palette.PaletteColorModel},
 		{Name: "description", Type: input.Textarea(), Label: "Description", OmitEmpty: true},
 		{Name: "position", Type: model.Int(), OmitEmpty: true},
 		// NotNull deliberadamente ausente: para un bool, NotNull rechaza el

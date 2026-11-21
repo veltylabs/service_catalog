@@ -15,6 +15,7 @@ type Specialty struct {
 	TenantId string
 	Prefix string
 	Name string
+	Tone string
 	Description string
 	Position int64
 	IsPublished bool
@@ -25,7 +26,7 @@ func (m *Specialty) ModelName() string { return "specialty" }
 
 func (m *Specialty) Schema() []model.Field { return SpecialtyModel.Fields }
 
-func (m *Specialty) Pointers() []any { return []any{&m.Id, &m.TenantId, &m.Prefix, &m.Name, &m.Description, &m.Position, &m.IsPublished, (*int64)(&m.UpdatedAt)} }
+func (m *Specialty) Pointers() []any { return []any{&m.Id, &m.TenantId, &m.Prefix, &m.Name, &m.Tone, &m.Description, &m.Position, &m.IsPublished, (*int64)(&m.UpdatedAt)} }
 
 func (m *Specialty) IsNil() bool { return m == nil }
 
@@ -34,6 +35,7 @@ func (m *Specialty) EncodeFields(w model.FieldWriter) {
 	w.String("tenant_id", m.TenantId)
 	w.String("prefix", m.Prefix)
 	w.String("name", m.Name)
+	if m.Tone != "" { w.String("tone", m.Tone) }
 	if m.Description != "" { w.String("description", m.Description) }
 	if m.Position != 0 { w.Int("position", m.Position) }
 	w.Bool("is_published", m.IsPublished)
@@ -45,6 +47,7 @@ func (m *Specialty) DecodeFields(r model.FieldReader) {
 	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 	if v, ok := r.String("prefix"); ok { m.Prefix = v }
 	if v, ok := r.String("name"); ok { m.Name = v }
+	if v, ok := r.String("tone"); ok { m.Tone = v }
 	if v, ok := r.String("description"); ok { m.Description = v }
 	if v, ok := r.Int("position"); ok { m.Position = v }
 	if v, ok := r.Bool("is_published"); ok { m.IsPublished = v }
@@ -67,15 +70,12 @@ func (m *Specialty) Validate(action byte) error {
 func (*Specialty) Allow() model.Action     { return SpecialtyModel.Allow }
 func (*SpecialtyList) Allow() model.Action { return SpecialtyModel.Allow }
 
-func (m *Specialty) Item() model.Item {
-	return model.Item{ID: m.Id, Label: m.Name, Description: m.Prefix}
-}
-
 var Specialty_ = struct {
 	Id string
 	TenantId string
 	Prefix string
 	Name string
+	Tone string
 	Description string
 	Position string
 	IsPublished string
@@ -85,6 +85,7 @@ var Specialty_ = struct {
 	TenantId: "tenant_id",
 	Prefix: "prefix",
 	Name: "name",
+	Tone: "tone",
 	Description: "description",
 	Position: "position",
 	IsPublished: "is_published",
