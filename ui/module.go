@@ -7,6 +7,14 @@ import "webtyp.com/svg"
 // aplicación ya utiliza (RBAC, nav, tests), independiente del nombre propio de este paquete.
 const ID = "service_catalog"
 
+// Identidad de cada pantalla, para que la app las ponga en su menú.
+//
+// Ejemplo: Screens: []string{ui.ServicesID, ui.SpecialtiesID}
+const (
+	ServicesID    = ID + ".services"
+	SpecialtiesID = ID + ".specialties"
+)
+
 // Label es el texto a mostrar en el ítem de navegación.
 const Label = "Catálogo"
 

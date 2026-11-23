@@ -27,14 +27,14 @@ func Screens(d view.BrowserDeps) []view.Screen {
 		Help:  descCatalog,
 		Children: []view.Screen{
 			{
-				ID:         ID + ".services",
+				ID:         ServicesID,
 				Label:      "Services",
 				Icon:       string(IconServices),
 				Permission: model.ResourceOf(&servicecatalog.ServiceModel),
 				Presenter:  servicecatalog.NewView(caller, view.WithDescription(descServices)),
 			},
 			{
-				ID:         ID + ".specialties",
+				ID:         SpecialtiesID,
 				Label:      "Specialties",
 				Icon:       string(IconSpecialties),
 				Permission: model.ResourceOf(&servicecatalog.SpecialtyModel),
