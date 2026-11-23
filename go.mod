@@ -5,7 +5,7 @@ go 1.26.8
 require (
 	webtyp.com/crud v0.0.19
 	webtyp.com/ddl v0.0.59
-	webtyp.com/dom v0.13.32
+	webtyp.com/dom v0.13.34
 	webtyp.com/events v0.1.15
 	webtyp.com/fmt v1.0.3
 	webtyp.com/html v0.0.30
